@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beranda User - EyeDetect</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f7faff;
+            color: #17202a;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e5eaf2;
+            padding: 28px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 45px;
+        }
+
+        .logo-icon {
+            font-size: 34px;
+            color: #1473e6;
+        }
+
+        .logo h2 {
+            font-size: 27px;
+            color: #11243d;
+        }
+
+        .logo h2 span {
+            color: #1473e6;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #344054;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 16px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: 0.3s;
+        }
+
+        .menu a i {
+            font-size: 19px;
+            width: 22px;
+        }
+
+        .menu a.active,
+        .menu a:hover {
+            background: #edf5ff;
+            color: #1473e6;
+        }
+
+        .sidebar-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .sidebar-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 14px;
+            background: #f7faff;
+        }
+
+        .avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #e7f0ff;
+            color: #1473e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .user-box h4 {
+            font-size: 15px;
+            color: #1d2939;
+        }
+
+        .user-box p {
+            font-size: 13px;
+            color: #667085;
+        }
+
+        .logout-btn {
+            width: 100%;
+            border: 1px solid #d8e1ec;
+            background: #ffffff;
+            color: #344054;
+            border-radius: 12px;
+            padding: 13px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logout-btn:hover {
+            background: #fff1f1;
+            color: #d92d20;
+        }
+
+        .main {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 88px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5eaf2;
+            padding: 0 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 38px;
+
+        }
+
+        .topbar h1 {
+            font-size: 28px;
+            color: #101828;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 16px;
+            color: #344054;
+        }
+
+        .topbar-right i {
+            font-size: 21px;
+            color: #101828;
+
+        }
+
+        .content {
+            padding: 34px 38px;
+        }
+
+        .empty-card {
+            width: 100%;
+            min-height: 620px;
+            background: #ffffff;
+            border: 1px solid #e5eaf2;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(16, 24, 40, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-content {
+            max-width: 560px;
+        }
+
+        .empty-illustration {
+            width: 210px;
+            height: 210px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #edf5ff, #ffffff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            color: #1473e6;
+            font-size: 82px;
+            position: relative;
+        }
+
+        .empty-illustration::after {
+            content: "";
+            position: absolute;
+            width: 135px;
+            height: 135px;
+            border-radius: 50%;
+            border: 2px dashed #b9d7ff;
+        }
+
+        .empty-content h2 {
+            font-size: 30px;
+            color: #1d2939;
+            margin-bottom: 14px;
+        }
+
+        .empty-content p {
+            font-size: 17px;
+            line-height: 1.7;
+            color: #667085;
+            margin-bottom: 28px;
+        }
+
+        .primary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #1473e6;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            transition: 0.3s;
+        }
+
+        .primary-btn:hover {
+            background: #0b5fc4;
+            transform: translateY(-2px);
+        }
+
+        .note-box {
+            margin-top: 24px;
+            background: #f1f7ff;
+            border: 1px solid #cde2ff;
+            color: #475467;
+            padding: 16px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            gap: 22px;
+        }
+
+        .hero {
+            background:
+                linear-gradient(90deg, rgba(237,245,255,0.95), rgba(237,245,255,0.75)),
+                url("{% static 'images/background.jpg' %}");
+            background-size: cover;
+            background-position: center right;
+            border-radius: 18px;
+            padding: 38px;
+            min-height: 230px;
+            border: 1px solid #d7e7ff;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero h2 {
+            font-size: 36px;
+            color: #0b2852;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: #344054;
+            line-height: 1.7;
+            margin-bottom: 22px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .stat-card,
+        .panel {
+            background: #ffffff;
+            border: 1px solid #e5eaf2;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(16, 24, 40, 0.05);
+        }
+
+        .stat-card {
+            padding: 22px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .stat-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: #edf5ff;
+            color: #1473e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-card h4 {
+            font-size: 14px;
+            color: #667085;
+            margin-bottom: 6px;
+        }
+
+        .stat-card h3 {
+            font-size: 24px;
+            color: #1473e6;
+        }
+
+        .stat-card p {
+            font-size: 12px;
+            color: #667085;
+            margin-top: 3px;
+        }
+
+        .lower-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 22px;
+        }
+
+        .panel {
+            padding: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .panel-header h3 {
+            font-size: 18px;
+            color: #0b2852;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-header a {
+            color: #1473e6;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .activity-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .activity-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: #edf5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1473e6;
+            font-size: 20px;
+        }
+
+        .activity-left h4 {
+            font-size: 15px;
+            color: #1d2939;
+            margin-bottom: 4px;
+        }
+
+        .activity-left p {
+            font-size: 13px;
+            color: #667085;
+        }
+
+        .badge {
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .badge.normal {
+            background: #dcfae6;
+            color: #039855;
+        }
+
+        .badge.warning {
+            background: #fff4db;
+            color: #dc6803;
+        }
+
+        .recommend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .recommend-item {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .recommend-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #edf5ff;
+            color: #1473e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .recommend-item h4 {
+            font-size: 15px;
+            color: #1d2939;
+            margin-bottom: 4px;
+        }
+
+        .recommend-item p {
+            font-size: 13px;
+            color: #667085;
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            color: #667085;
+            font-size: 13px;
+            padding: 18px;
+            border-top: 1px solid #e5eaf2;
+        }
+
+        @media (max-width: 1000px) {
+            .sidebar {
+                width: 230px;
+            }
+
+            .main {
+                margin-left: 230px;
+                width: calc(100% - 230px);
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .lower-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            body {
+                display: block;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 24px 18px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div>
+            <div class="logo">
+                <i class="fa-regular fa-eye logo-icon"></i>
+                <h2><span>Eye</span>Detect</h2>
+            </div>
+
+            <nav class="menu">
+                <a href="{{ url('/dashboard') }}" class="active">
+                    <i class="fa-solid fa-house"></i>
+                    Beranda
+                </a>
+
+                <a href="{{ url('/cara-kerja') }}">
+                    <i class="fa-regular fa-book-open"></i>
+                    Cara Kerja/Panduan
+                </a>
+
+                <a href="{% url 'deteksi' %}">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    Deteksi
+                </a>
+
+                <a href="{% url 'riwayat-skrining' %}">
+                    <i class="fa-regular fa-clock"></i>
+                    Riwayat Skrining
+                </a>
+
+                <a href="{% url 'profile' %}">
+                    <i class="fa-regular fa-user"></i>
+                    Profil Saya
+                </a>
+
+                <a href="#">
+                    <i class="fa-solid fa-gear"></i>
+                    Pengaturan
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="user-box">
+                <div class="avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <div>
+                    <h4>Halo, {{ auth()->user()->name }}</h4>
+                    <p>Pengguna</p>
+                </div>
+            </div>
+
+            <form action="{% url 'logout' %}" method="POST">
+                @csrf
+                <button type="submit" class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Keluar
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <h1>Beranda</h1>
+
+            <div class="topbar-right">
+                <i class="fa-regular fa-bell"></i>
+                <span>Halo, {{ auth()->user()->name }}</span>
+            </div>
+        </header>
+
+        <section class="content">
+
+            @if($screeningCount == 0)
+
+                <!-- BERANDA KOSONG UNTUK USER BARU -->
+                <div class="empty-card">
+                    <div class="empty-content">
+                        <div class="empty-illustration">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        </div>
+
+                        <h2>Selamat datang di EyeDetect!</h2>
+
+                        <p>
+                            Anda belum melakukan skrining mata.
+                            Mulai deteksi untuk mendapatkan hasil analisis,
+                            riwayat pemeriksaan, dan rekomendasi edukasi yang sesuai.
+                        </p>
+
+                        <a href="#" class="primary-btn">
+                            <i class="fa-solid fa-camera"></i>
+                            Mulai Deteksi
+                        </a>
+
+                        <div class="note-box">
+                            Setelah Anda melakukan deteksi pertama, beranda ini akan otomatis
+                            menampilkan ringkasan hasil skrining, aktivitas terbaru,
+                            status kesehatan mata, dan rekomendasi edukasi.
+                        </div>
+                    </div>
+                </div>
+
+            @else
+
+                <!-- DASHBOARD SETELAH USER SUDAH PERNAH DETEKSI -->
+                <div class="dashboard-grid">
+
+                    <div class="hero">
+                        <div>
+                            <h2>Selamat Datang Kembali, {{ auth()->user()->name }}!</h2>
+                            <p>
+                                Pantau hasil skrining mata Anda dengan mudah.
+                                Sistem akan menampilkan ringkasan hasil terbaru,
+                                riwayat pemeriksaan, dan edukasi yang relevan.
+                            </p>
+
+                            <a href="#" class="primary-btn">
+                                <i class="fa-solid fa-camera"></i>
+                                Mulai Deteksi Baru
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h4>Total Deteksi</h4>
+                                <h3>{{ $screeningCount }}</h3>
+                                <p>Jumlah skrining Anda</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fa-regular fa-calendar"></i>
+                            </div>
+                            <div>
+                                <h4>Deteksi Terakhir</h4>
+                                <h3>Terbaru</h3>
+                                <p>Berdasarkan riwayat terakhir</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-shield-heart"></i>
+                            </div>
+                            <div>
+                                <h4>Status Kesehatan</h4>
+                                <h3>Dipantau</h3>
+                                <p>Perlu pemeriksaan berkala</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-book-medical"></i>
+                            </div>
+                            <div>
+                                <h4>Edukasi</h4>
+                                <h3>Aktif</h3>
+                                <p>Rekomendasi tersedia</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lower-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>
+                                    <i class="fa-regular fa-clock"></i>
+                                    Aktivitas Terakhir
+                                </h3>
+                                <a href="#">Lihat semua</a>
+                            </div>
+
+                            <div class="activity-row">
+                                <div class="activity-left">
+                                    <div class="thumb">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Pemeriksaan Retina</h4>
+                                        <p>Hasil skrining terakhir</p>
+                                    </div>
+                                </div>
+                                <span class="badge normal">Normal</span>
+                            </div>
+
+                            <div class="activity-row">
+                                <div class="activity-left">
+                                    <div class="thumb">
+                                        <i class="fa-solid fa-eye-low-vision"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Pemeriksaan Mata</h4>
+                                        <p>Rekomendasi edukasi tersedia</p>
+                                    </div>
+                                </div>
+                                <span class="badge warning">Perlu Dipantau</span>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>
+                                    <i class="fa-regular fa-lightbulb"></i>
+                                    Rekomendasi untuk Anda
+                                </h3>
+                            </div>
+
+                            <div class="recommend-list">
+                                <div class="recommend-item">
+                                    <div class="recommend-icon">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Istirahatkan mata secara rutin</h4>
+                                        <p>Terapkan aturan 20-20-20 saat menggunakan layar.</p>
+                                    </div>
+                                </div>
+
+                                <div class="recommend-item">
+                                    <div class="recommend-icon">
+                                        <i class="fa-solid fa-glasses"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Gunakan perlindungan dari sinar UV</h4>
+                                        <p>Pakai kacamata hitam saat beraktivitas di luar ruangan.</p>
+                                    </div>
+                                </div>
+
+                                <div class="recommend-item">
+                                    <div class="recommend-icon">
+                                        <i class="fa-solid fa-carrot"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Konsumsi makanan bergizi</h4>
+                                        <p>Perbanyak makanan yang baik untuk kesehatan mata.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            @endif
+
+        </section>
+
+        <footer class="footer">
+            © 2026 EyeDetect. Semua hak dilindungi.
+        </footer>
+    </main>
+
+</body>
+</html>
