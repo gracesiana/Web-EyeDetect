@@ -550,12 +550,12 @@
             </div>
 
             <nav class="menu">
-                <a href="{{ url('/dashboard') }}" class="active">
+                <a href="{% url 'dashboard' %}" class="active">
                     <i class="fa-solid fa-house"></i>
                     Beranda
                 </a>
 
-                <a href="{{ url('/cara-kerja') }}">
+                <a href="{% url 'cara_kerja' %}">
                     <i class="fa-regular fa-book-open"></i>
                     Cara Kerja/Panduan
                 </a>
@@ -565,7 +565,7 @@
                     Deteksi
                 </a>
 
-                <a href="{% url 'riwayat-skrining' %}">
+                <a href="{% url 'riwayat_skrining' %}">
                     <i class="fa-regular fa-clock"></i>
                     Riwayat Skrining
                 </a>
@@ -575,7 +575,7 @@
                     Profil Saya
                 </a>
 
-                <a href="#">
+                <a href="{% url 'pengaturan' %}">
                     <i class="fa-solid fa-gear"></i>
                     Pengaturan
                 </a>
@@ -589,13 +589,13 @@
                 </div>
 
                 <div>
-                    <h4>Halo, {{ auth()->user()->name }}</h4>
+                    <h4>Halo, {{ user.get_full_name|default:user.username }}</h4>
                     <p>Pengguna</p>
                 </div>
             </div>
 
             <form action="{% url 'logout' %}" method="POST">
-                @csrf
+                {% csrf_token %}
                 <button type="submit" class="logout-btn">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     Keluar
@@ -610,13 +610,13 @@
 
             <div class="topbar-right">
                 <i class="fa-regular fa-bell"></i>
-                <span>Halo, {{ auth()->user()->name }}</span>
+                <span>Halo, {{ user.get_full_name|default:user.username }}</span>
             </div>
         </header>
 
         <section class="content">
 
-            @if($screeningCount == 0)
+            {% if screeningCount == 0 %}
 
                 <!-- BERANDA KOSONG UNTUK USER BARU -->
                 <div class="empty-card">
@@ -646,14 +646,14 @@
                     </div>
                 </div>
 
-            @else
+            {% else %}
 
                 <!-- DASHBOARD SETELAH USER SUDAH PERNAH DETEKSI -->
                 <div class="dashboard-grid">
 
                     <div class="hero">
                         <div>
-                            <h2>Selamat Datang Kembali, {{ auth()->user()->name }}!</h2>
+                            <h2>Selamat Datang Kembali, {{ user.get_full_name|default:user.username }}!</h2>
                             <p>
                                 Pantau hasil skrining mata Anda dengan mudah.
                                 Sistem akan menampilkan ringkasan hasil terbaru,
@@ -674,7 +674,7 @@
                             </div>
                             <div>
                                 <h4>Total Deteksi</h4>
-                                <h3>{{ $screeningCount }}</h3>
+                                <h3>{{ screeningCount }}</h3>
                                 <p>Jumlah skrining Anda</p>
                             </div>
                         </div>
@@ -794,7 +794,7 @@
 
                 </div>
 
-            @endif
+            {% endif %}
 
         </section>
 

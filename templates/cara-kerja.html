@@ -406,17 +406,17 @@
             </div>
 
             <nav class="menu">
-                <a href="{{ url('/dashboard') }}">
+                <a href="{% url 'dashboard' %}">
                     <i class="fa-solid fa-house"></i>
                     Beranda
                 </a>
 
-                <a href="{{ url('/cara-kerja') }}" class="active">
+                <a href="{% url 'cara_kerja' %}" class="active">
                     <i class="fa-solid fa-book-open"></i>
                     Cara Kerja/Panduan
                 </a>
 
-                <a href="{{ url('/deteksi') }}" class="active">
+                <a href="{% url 'deteksi' %}" class="active">
                     <i class="fa-solid fa-stethoscope"></i>
                     Deteksi
                 </a>
@@ -431,7 +431,7 @@
                     Profil Saya
                 </a>
 
-                <a href="#">
+                <a href="{% url 'pengaturan' %}">
                     <i class="fa-solid fa-gear"></i>
                     Pengaturan
                 </a>
@@ -445,13 +445,13 @@
                 </div>
 
                 <div>
-                    <h4>Halo, {{ auth()->user()->name }}</h4>
+                    <h4>Halo, {{ user.get_full_name|default:user.username }}</h4>
                     <p>Pengguna</p>
                 </div>
             </div>
 
             <form action="{% url 'logout' %}" method="POST">
-                @csrf
+                {% csrf_token %}
                 <button type="submit" class="logout-btn">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     Keluar
@@ -466,7 +466,7 @@
 
             <div class="topbar-right">
                 <i class="fa-regular fa-bell"></i>
-                <span>Halo, {{ auth()->user()->name }}</span>
+                <span>Halo, {{ user.get_full_name|default:user.username }}</span>
             </div>
         </header>
 

@@ -1,209 +1,510 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Pengaturan</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan - EyeDetect</title>
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         body {
+            background: #f7faff;
+            color: #17202a;
+            min-height: 100vh;
             display: flex;
-            background: #f5f7fb;
         }
 
-        /* SIDEBAR */
         .sidebar {
-            width: 250px;
-            height: 100vh;
+            width: 280px;
+            min-height: 100vh;
             background: #ffffff;
-            border-right: 1px solid #e5e7eb;
-            padding: 20px;
+            border-right: 1px solid #e5eaf2;
+            padding: 28px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            left: 0;
+            top: 0;
         }
 
         .logo {
-            font-size: 22px;
-            font-weight: 600;
-            color: #2563eb;
-            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 45px;
+        }
+
+        .logo-icon {
+            font-size: 34px;
+            color: #1473e6;
+        }
+
+        .logo h2 {
+            font-size: 27px;
+            color: #11243d;
+        }
+
+        .logo h2 span {
+            color: #1473e6;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .menu a {
+            text-decoration: none;
+            color: #344054;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 16px 18px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px;
-            border-radius: 10px;
-            text-decoration: none;
-            color: #374151;
-            margin-bottom: 10px;
+            gap: 14px;
+            transition: 0.3s;
         }
 
-        .menu a.active {
-            background: #e0ecff;
-            color: #2563eb;
-            font-weight: 500;
+        .menu a i {
+            font-size: 19px;
+            width: 22px;
         }
 
-        /* MAIN */
-        .main {
-            flex: 1;
-            padding: 30px;
+        .menu a.active,
+        .menu a:hover {
+            background: #edf5ff;
+            color: #1473e6;
         }
 
-        .header {
-            font-size: 26px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
-
-        .card h3 {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-        }
-
-        .btn {
-            background: #2563eb;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background: #1e4fd1;
-        }
-
-        .row {
+        .sidebar-bottom {
             display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .user-box {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 16px;
+            background: #f7faff;
+            border-radius: 12px;
+        }
+
+        .user-box .avatar {
+            width: 45px;
+            height: 45px;
+            background: #1473e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .user-box h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .user-box p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff5757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e74c3c;
+        }
+
+        main {
+            margin-left: 280px;
+            flex: 1;
+        }
+
+        .topbar {
+            background: white;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5eaf2;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
             gap: 20px;
         }
 
-        .row .form-group {
-            flex: 1;
+        .topbar-right i {
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .settings-card h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5eaf2;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .setting-label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .setting-label strong {
+            font-size: 15px;
+            color: #333;
+        }
+
+        .setting-label p {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .toggle {
+            width: 50px;
+            height: 28px;
+            background: #ddd;
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .toggle.active {
+            background: #1473e6;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+
+        .toggle.active::after {
+            left: 24px;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: #1473e6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #1059c7;
+        }
+
+        .btn-danger {
+            padding: 10px 20px;
+            background: #ff5757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-danger:hover {
+            background: #e74c3c;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: #999;
+            font-size: 14px;
+            border-top: 1px solid #e5eaf2;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            main {
+                margin-left: 220px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                left: 0;
+                top: 0;
+                justify-content: flex-start;
+                flex-direction: row;
+                padding: 15px;
+            }
+
+            main {
+                margin-left: 0;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .topbar {
+                padding: 15px 20px;
+            }
+
+            .topbar h1 {
+                font-size: 20px;
+            }
+
+            .setting-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
         }
     </style>
 </head>
+
 <body>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="logo">EyeDetect</div>
+    <aside class="sidebar">
+        <div>
+            <div class="logo">
+                <i class="fa-regular fa-eye logo-icon"></i>
+                <h2><span>Eye</span>Detect</h2>
+            </div>
 
-        <div class="menu">
-            <a href="#">Beranda</a>
-            <a href="#">Cara Kerja</a>
-            <a href="#">Deteksi</a>
-            <a href="#">Riwayat Skrining</a>
-            <a href="#">Profil Saya</a>
-            <a href="#" class="active">Pengaturan</a>
+            <nav class="menu">
+                <a href="{% url 'dashboard' %}">
+                    <i class="fa-solid fa-house"></i>
+                    Beranda
+                </a>
+
+                <a href="{% url 'cara_kerja' %}">
+                    <i class="fa-regular fa-book-open"></i>
+                    Cara Kerja/Panduan
+                </a>
+
+                <a href="{% url 'deteksi' %}">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    Deteksi
+                </a>
+
+                <a href="{% url 'riwayat_skrining' %}">
+                    <i class="fa-regular fa-clock"></i>
+                    Riwayat Skrining
+                </a>
+
+                <a href="{% url 'profile' %}">
+                    <i class="fa-regular fa-user"></i>
+                    Profil Saya
+                </a>
+
+                <a href="{% url 'pengaturan' %}" class="active">
+                    <i class="fa-solid fa-gear"></i>
+                    Pengaturan
+                </a>
+            </nav>
         </div>
-    </div>
 
-    <!-- MAIN -->
-    <div class="main">
-        <div class="header">Pengaturan</div>
-
-        <!-- PROFIL -->
-        <div class="card">
-            <h3>Informasi Profil</h3>
-
-            <div class="row">
-                <div class="form-group">
-                    <label>Nama Lengkap</label>
-                    <input type="text" placeholder="Nama kamu">
+        <div class="sidebar-bottom">
+            <div class="user-box">
+                <div class="avatar">
+                    <i class="fa-solid fa-user"></i>
                 </div>
 
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" placeholder="username">
+                <div>
+                    <h4>Halo, {{ user.get_full_name|default:user.username }}</h4>
+                    <p>Pengguna</p>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" placeholder="email@gmail.com">
-            </div>
-
-            <button class="btn">Simpan Perubahan</button>
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Keluar
+                </button>
+            </form>
         </div>
+    </aside>
 
-        <!-- PENGATURAN UMUM -->
-        <div class="card">
-            <h3>Pengaturan Umum</h3>
+    <main>
+        <header class="topbar">
+            <h1>Pengaturan</h1>
 
-            <div class="form-group">
-                <label>Bahasa</label>
-                <select>
-                    <option>Indonesia</option>
-                    <option>English</option>
-                </select>
+            <div class="topbar-right">
+                <i class="fa-regular fa-bell"></i>
+                <span>Halo, {{ user.get_full_name|default:user.username }}</span>
+            </div>
+        </header>
+
+        <section class="content">
+            <div class="settings-card">
+                <h3>Notifikasi</h3>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Notifikasi Email</strong>
+                        <p>Terima notifikasi melalui email</p>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Notifikasi Skrining</strong>
+                        <p>Pengingat untuk melakukan skrining berkala</p>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Update Produk</strong>
+                        <p>Berita tentang fitur dan update terbaru</p>
+                    </div>
+                    <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Mode Tampilan</label>
-                <select>
-                    <option>Terang</option>
-                    <option>Gelap</option>
-                </select>
+            <div class="settings-card">
+                <h3>Keamanan</h3>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Ubah Password</strong>
+                        <p>Perbarui password Anda secara berkala</p>
+                    </div>
+                    <button class="btn-primary">Ubah</button>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Autentikasi Dua Faktor</strong>
+                        <p>Aktifkan keamanan tambahan untuk akun Anda</p>
+                    </div>
+                    <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Zona Waktu</label>
-                <select>
-                    <option>GMT+7 (Jakarta)</option>
-                </select>
+            <div class="settings-card">
+                <h3>Privasi</h3>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Bagikan Data Anonim</strong>
+                        <p>Bantu kami meningkatkan layanan dengan data anonim</p>
+                    </div>
+                    <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                </div>
+
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Riwayat Pencarian</strong>
+                        <p>Simpan riwayat pencarian Anda</p>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                </div>
             </div>
-        </div>
 
-        <!-- KEAMANAN -->
-        <div class="card">
-            <h3>Keamanan Akun</h3>
+            <div class="settings-card">
+                <h3>Zona Berbahaya</h3>
 
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" placeholder="********">
+                <div class="setting-row">
+                    <div class="setting-label">
+                        <strong>Hapus Data Akun</strong>
+                        <p>Hapus semua data pribadi Anda secara permanen</p>
+                    </div>
+                    <button class="btn-danger">Hapus</button>
+                </div>
             </div>
 
-            <button class="btn">Ubah Password</button>
-        </div>
-
-    </div>
+            <footer class="footer">
+                © 2026 EyeDetect. Semua hak dilindungi.
+            </footer>
+        </section>
+    </main>
 
 </body>
 </html>

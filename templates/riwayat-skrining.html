@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Saya - EyeDetect</title>
+    <title>Riwayat Skrining - EyeDetect</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -183,92 +183,74 @@
             padding: 40px;
         }
 
-        .profile-card {
+        .history-card {
             background: white;
             border-radius: 12px;
             padding: 24px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            margin-bottom: 20px;
+            border-left: 4px solid #1473e6;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .profile-left {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            background: #1473e6;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 40px;
-        }
-
-        .profile-info h3 {
+        .history-card h3 {
             font-size: 18px;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
         }
 
-        .profile-info p {
+        .history-card p {
             font-size: 14px;
             color: #666;
+            margin-bottom: 8px;
         }
 
-        .edit-btn {
-            padding: 10px 20px;
-            background: #1473e6;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+        .history-status {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e3f2fd;
+            color: #1473e6;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 600;
-            transition: 0.3s;
+            margin-top: 10px;
         }
 
-        .edit-btn:hover {
-            background: #1059c7;
+        .history-status.normal {
+            background: #e8f5e9;
+            color: #4caf50;
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+        .history-status.warning {
+            background: #fff3e0;
+            color: #ff9800;
         }
 
-        .info-card {
+        .history-status.danger {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
             background: white;
             border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .info-card h3 {
-            font-size: 18px;
+        .empty-state i {
+            font-size: 64px;
+            color: #ccc;
             margin-bottom: 20px;
         }
 
-        .info-row {
-            margin-bottom: 16px;
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #666;
         }
 
-        .info-label {
-            font-size: 13px;
+        .empty-state p {
             color: #999;
-            margin-bottom: 4px;
-        }
-
-        .info-value {
-            font-size: 15px;
-            font-weight: 600;
-            color: #333;
+            font-size: 16px;
         }
 
         .footer {
@@ -287,10 +269,6 @@
 
             main {
                 margin-left: 220px;
-            }
-
-            .info-grid {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -321,11 +299,6 @@
             .topbar h1 {
                 font-size: 20px;
             }
-
-            .profile-card {
-                flex-direction: column;
-                text-align: center;
-            }
         }
     </style>
 </head>
@@ -355,17 +328,17 @@
                     Deteksi
                 </a>
 
-                <a href="{% url 'riwayat_skrining' %}">
+                <a href="{% url 'riwayat_skrining' %}" class="active">
                     <i class="fa-regular fa-clock"></i>
                     Riwayat Skrining
                 </a>
 
-                <a href="{% url 'profile' %}" class="active">
+                <a href="{% url 'profile' %}">
                     <i class="fa-regular fa-user"></i>
                     Profil Saya
                 </a>
 
-                <a href="{% url 'pengaturan' %}">
+                <a href="#">
                     <i class="fa-solid fa-gear"></i>
                     Pengaturan
                 </a>
@@ -396,7 +369,7 @@
 
     <main>
         <header class="topbar">
-            <h1>Profil Saya</h1>
+            <h1>Riwayat Skrining</h1>
 
             <div class="topbar-right">
                 <i class="fa-regular fa-bell"></i>
@@ -405,69 +378,25 @@
         </header>
 
         <section class="content">
-            <div class="profile-card">
-                <div class="profile-left">
-                    <div class="profile-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="profile-info">
-                        <h3>{{ user.get_full_name|default:user.username }}</h3>
-                        <p>{{ user.email }}</p>
-                        <p>Pengguna EyeDetect</p>
-                    </div>
+            {% if screenings %}
+                <div class="history-list">
+                    {% for screening in screenings %}
+                        <div class="history-card">
+                            <h3>Skrining Mata #{{ screening.id }}</h3>
+                            <p><strong>Tanggal:</strong> {{ screening.created_at|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Jenis Pemeriksaan:</strong> Analisis Retina</p>
+                            <p><strong>Hasil:</strong> Normal</p>
+                            <span class="history-status normal">Normal</span>
+                        </div>
+                    {% endfor %}
                 </div>
-                <button class="edit-btn">Edit Profil</button>
-            </div>
-
-            <div class="info-grid">
-                <div class="info-card">
-                    <h3>Informasi Akun</h3>
-
-                    <div class="info-row">
-                        <div class="info-label">Nama Lengkap</div>
-                        <div class="info-value">{{ user.get_full_name|default:user.username }}</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Email</div>
-                        <div class="info-value">{{ user.email }}</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Username</div>
-                        <div class="info-value">{{ user.username }}</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Tanggal Bergabung</div>
-                        <div class="info-value">{{ user.date_joined|date:"d/m/Y" }}</div>
-                    </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fa-regular fa-calendar"></i>
+                    <h2>Belum Ada Riwayat Skrining</h2>
+                    <p>Anda belum melakukan skrining mata. Mulai deteksi sekarang untuk melihat riwayat pemeriksaan.</p>
                 </div>
-
-                <div class="info-card">
-                    <h3>Statistik Anda</h3>
-
-                    <div class="info-row">
-                        <div class="info-label">Total Skrining</div>
-                        <div class="info-value">0</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Skrining Terakhir</div>
-                        <div class="info-value">-</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Status Akun</div>
-                        <div class="info-value">Aktif</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-label">Rekomendasi</div>
-                        <div class="info-value">0</div>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
 
             <footer class="footer">
                 © 2026 EyeDetect. Semua hak dilindungi.
