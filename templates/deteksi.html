@@ -590,11 +590,11 @@
                 </div>
             </div>
 
-            <form action="{% url 'logout' %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" class="logout-btn">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    Keluar
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                <button type="submit" class="analyze-btn">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    Analisis Sekarang
                 </button>
             </form>
         </div>
@@ -619,11 +619,13 @@
             <form action="#" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 
-                <input type="file" name="image" required>
-
-                <button type="submit">
-                    Deteksi
-                </button>
+                <input
+                    type="file"
+                    name="retina_image"
+                    id="retinaImage"
+                    accept="image/png,image/jpeg,image/jpg"
+                    hidden
+                >
                 
                 <div class="upload-card">
                     <div class="upload-top-icon">
@@ -653,7 +655,7 @@
                     </button>
                 </div>
 
-                <button type="button" class="analyze-btn">
+                <button type="submit" class="analyze-btn">
                     <i class="fa-solid fa-chart-simple"></i>
                     Analisis Sekarang
                 </button>
@@ -694,20 +696,41 @@
                         <div class="result-row">
                             <i class="fa-solid fa-bullseye"></i>
                             <strong>Status Prediksi</strong>
-                            <span>-</span>
+                            <span>{{ hasil|default:"-" }}</span>
                         </div>
 
                         <div class="result-row">
                             <i class="fa-solid fa-gauge-high"></i>
                             <strong>Tingkat Kepercayaan</strong>
-                            <span>-</span>
+                            <span>
+                            {% if confidence %}
+                                {{ confidence|floatformat:2 }}%
+                            {% else %}
+                                -
+                            {% endif %}
+                            </span>
                         </div>
 
                         <div class="result-row">
                             <i class="fa-solid fa-brain"></i>
                             <strong>Visualisasi Explainable AI</strong>
-                            <span class="status-pill">Belum tersedia</span>
+                            {% if gradcam_image %}
+                                <div style="margin-top:10px">
+                                    <img
+                                        src="{{ gradcam_image }}"
+                                        style="
+                                            width:100%;
+                                            border-radius:10px;
+                                            border:1px solid #dbe5f0;
+                                        "
+                                    >
                         </div>
+                    {% else %}
+                        <span class="status-pill">
+                            Belum tersedia
+                        </span>
+                    {% endif %}
+                </div>
                     </div>
 
                     <div class="info-note">

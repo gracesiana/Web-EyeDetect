@@ -7,8 +7,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
+from urllib3 import request
 
 from ai_model.predict import predict_image
+from ai_model.gradcam import generate_gradcam
 
 
 def welcome(request):
@@ -114,8 +116,63 @@ def dashboard(request):
         'screeningCount': screening_count,
     })
 
+from django.core.files.storage import FileSystemStorage
+
 def deteksi(request):
-    return render(request, 'deteksi.html')
+
+    print("METHOD:", request.method)
+
+    hasil = None
+    confidence = None
+    filename = None
+    gradcam_image = None
+
+    if request.method == "POST":
+
+        print("POST MASUK")
+
+        retina_image = request.FILES.get("retina_image")
+
+        print("FILE:", retina_image)
+
+        if retina_image:
+
+            fs = FileSystemStorage()
+
+            filename = fs.save(
+                retina_image.name,
+                retina_image
+            )
+
+            filepath = fs.path(filename)
+
+            print("FILEPATH:", filepath)
+
+            hasil, confidence = predict_image(filepath)
+            gradcam_filename = "gradcam_" + filename
+
+            gradcam_path = fs.path(gradcam_filename)
+
+            generate_gradcam(
+                filepath,
+                gradcam_path
+            )
+
+            gradcam_image = "/media/" + gradcam_filename
+
+            print("HASIL:", hasil)
+            print("CONFIDENCE:", confidence)
+
+    return render(
+    request,
+    "deteksi.html",
+    {
+        "hasil": hasil,
+        "confidence": confidence,
+        "filename": filename,
+        "gradcam_image": gradcam_image,
+    }
+)
 
 def cara_kerja(request):
     return render(request, 'cara-kerja.html')
