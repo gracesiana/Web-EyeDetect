@@ -1,0 +1,95 @@
+{% extends 'admin_base.html' %}
+
+{% block page_actions %}
+  <a href="#uploadForm" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800">Unggah Dataset</a>
+{% endblock %}
+
+{% block content %}
+  <div class="glass-card w-full rounded-3xl p-6">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Dataset Retina</p>
+        <h3 class="mt-2 text-2xl font-semibold text-slate-900">Daftar dataset retina</h3>
+      </div>
+      <form method="get" action="{% url 'admin_panel_dataset' %}" class="flex w-full items-center gap-3 sm:w-auto">
+        <input type="search" name="search" value="{{ search_query }}" placeholder="Cari dataset..." class="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-sky-400 focus:outline-none sm:w-72" />
+        <button type="submit" class="rounded-3xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Cari</button>
+      </form>
+    </div>
+    {% if messages %}
+      <div class="mt-6 space-y-2">
+        {% for message in messages %}
+          <div class="rounded-3xl border px-4 py-3 text-sm {% if message.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-700{% else %}border-emerald-200 bg-emerald-50 text-emerald-700{% endif %}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <div id="uploadForm" class="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Unggah Dataset</p>
+          <h4 class="mt-2 text-xl font-semibold text-slate-900">Tambahkan data retina baru</h4>
+        </div>
+        <p class="text-sm text-slate-600">File akan disimpan ke media server.</p>
+      </div>
+      <form method="post" enctype="multipart/form-data" class="mt-6 grid gap-4 sm:grid-cols-[1fr_auto]">
+        {% csrf_token %}
+        <div class="grid gap-4">
+          <label class="text-sm font-medium text-slate-700">Gambar Retina</label>
+          <input type="file" name="dataset_file" accept="image/*" class="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-sky-400 focus:outline-none" />
+          <label class="text-sm font-medium text-slate-700">Kelas Penyakit</label>
+          <select name="disease" class="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-sky-400 focus:outline-none">
+            <option value="Normal">Normal</option>
+            <option value="Katarak">Katarak</option>
+            <option value="Glaukoma">Glaukoma</option>
+            <option value="Diabetic Retinopathy">Diabetic Retinopathy</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-modern w-full rounded-3xl px-5 py-3">Unggah Dataset</button>
+      </form>
+    </div>
+    <div class="mt-8 overflow-x-auto overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="px-6 py-4">ID Dataset</th>
+            <th class="px-6 py-4">Data</th>
+            <th class="px-6 py-4">Kelas</th>
+            <th class="px-6 py-4">Tanggal Upload</th>
+            <th class="px-6 py-4">Ukuran</th>
+            <th class="px-6 py-4">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          {% for item in dataset_items %}
+          <tr class="transition hover:bg-slate-50">
+            <td class="px-6 py-4 font-semibold text-slate-900">{{ item.id }}</td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <img src="{{ item.image }}" alt="dataset" class="h-12 w-12 rounded-2xl object-cover" />
+                <span class="text-slate-700">Preview</span>
+              </div>
+            </td>
+            <td class="px-6 py-4">{{ item.disease }}</td>
+            <td class="px-6 py-4">{{ item.upload_date }}</td>
+            <td class="px-6 py-4">{{ item.size }}</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if item.status == 'Verified' %}bg-emerald-100 text-emerald-700{% elif item.status == 'Pending' %}bg-amber-100 text-amber-700{% else %}bg-slate-100 text-slate-700{% endif %}">{{ item.status }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-6 flex items-center justify-between text-sm text-slate-500">
+      <span>Halaman {{ dataset_page }} dari {{ dataset_total_pages }}</span>
+      <div class="flex items-center gap-2">
+        {% if dataset_page > 1 %}
+          <a href="?page={{ dataset_page|add:'-1' }}{% if search_query %}&search={{ search_query }}{% endif %}" class="rounded-full bg-slate-100 px-4 py-2 hover:bg-slate-200">Sebelumnya</a>
+        {% endif %}
+        {% if dataset_page < dataset_total_pages %}
+          <a href="?page={{ dataset_page|add:'1' }}{% if search_query %}&search={{ search_query }}{% endif %}" class="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">Berikutnya</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'admin_base.html' %}
+
+{% block page_actions %}
+  <a href="{% url 'admin_panel_dataset' %}" class="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2 text-sm font-medium text-white transition duration-200 hover:bg-[#1d4ed8]">Tambah Dataset</a>
+{% endblock %}
+
+{% block content %}
+  <section class="dashboard-hero relative overflow-hidden rounded-[2rem] border border-white/20 bg-[#0F172A] px-8 py-10 text-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+    <div class="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.18),transparent_20%),radial-gradient(circle_at_80%_30%,rgba(6,182,212,0.16),transparent_18%),radial-gradient(circle_at_50%_70%,rgba(37,99,235,0.12),transparent_18%)]"></div>
+    <div class="absolute inset-0 bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 800 800%22%3E%3Cg fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.12%22 stroke-width=%224%22%3E%3Cpath d=%22M100 400C150 300 250 250 350 250S550 300 600 400%22/%3E%3Cpath d=%22M120 480C170 380 270 330 370 330S570 380 620 480%22/%3E%3Cpath d=%22M140 560C190 460 290 410 390 410S590 460 640 560%22/%3E%3C/g%3E%3C/svg%3E')] bg-[length:1200px] bg-center"></div>
+    <div class="relative z-10 w-full">
+      <p class="text-sm uppercase tracking-[0.35em] text-[#06B6D4]">Healthcare AI Monitor</p>
+      <h1 class="mt-4 text-4xl font-semibold leading-tight text-white">EyeDetect AI Dashboard</h1>
+      <p class="mt-4 w-full text-base leading-7 text-slate-200">Deep Learning Based Eye Disease Detection System</p>
+    </div>
+  </section>
+
+  <div class="grid w-full gap-4 xl:grid-cols-4">
+    <div class="glass-card rounded-3xl p-6 w-full">
+      <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Total Dataset</p>
+      <p class="mt-4 text-3xl font-semibold text-[#0F172A]">{{ stats.total_dataset }}</p>
+      <p class="mt-2 text-sm text-slate-500">Kumpulan data retina lengkap.</p>
+    </div>
+    <div class="glass-card rounded-3xl p-6 w-full">
+      <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Total Prediksi</p>
+      <p class="mt-4 text-3xl font-semibold text-[#0F172A]">{{ stats.total_predictions }}</p>
+      <p class="mt-2 text-sm text-slate-500">Hasil diagnosis pasien terbaru.</p>
+    </div>
+    <div class="glass-card rounded-3xl p-6 w-full">
+      <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Akurasi Model</p>
+      <p class="mt-4 text-3xl font-semibold text-[#0F172A]">{{ stats.model_accuracy }}</p>
+      <p class="mt-2 text-sm text-slate-500">Kinerja model terkini.</p>
+    </div>
+    <div class="glass-card rounded-3xl p-6 w-full">
+      <p class="text-sm uppercase tracking-[0.3em] text-slate-500">User Aktif</p>
+      <p class="mt-4 text-3xl font-semibold text-[#0F172A]">{{ stats.active_users }}</p>
+      <p class="mt-2 text-sm text-slate-500">Pengguna aktif bulan ini.</p>
+    </div>
+  </div>
+
+  <div class="grid w-full gap-4 lg:grid-cols-[2fr_1fr]">
+    <div class="glass-card rounded-3xl p-6 w-full">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Distribusi Penyakit Retina</p>
+          <h3 class="mt-2 text-xl font-semibold text-[#0F172A]">Diagnosis Breakdown</h3>
+        </div>
+        <span class="rounded-full bg-[#e0f2fe] px-3 py-1 text-sm font-semibold text-[#2563EB]">6 Bulan</span>
+      </div>
+      <canvas id="distributionChart" class="h-96 w-full"></canvas>
+    </div>
+    <div class="glass-card rounded-3xl p-6 w-full">
+      <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Informasi Model CNN</p>
+      <h3 class="mt-2 text-2xl font-semibold text-[#0F172A]">Insight Model</h3>
+      <div class="mt-6 space-y-4 text-slate-700">
+        <div class="grid gap-2 sm:grid-cols-2">
+          <span class="text-sm text-slate-500">CNN Architecture</span>
+          <span class="font-semibold text-[#0F172A]">ResNet50 + DenseNet</span>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <span class="text-sm text-slate-500">Accuracy</span>
+          <span class="font-semibold text-[#0F172A]">{{ stats.model_accuracy }}</span>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <span class="text-sm text-slate-500">Epoch</span>
+          <span class="font-semibold text-[#0F172A]">35</span>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <span class="text-sm text-slate-500">Total Dataset Training</span>
+          <span class="font-semibold text-[#0F172A]">12.8k</span>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <span class="text-sm text-slate-500">Explainable AI</span>
+          <span class="font-semibold text-[#0F172A]">Grad-CAM</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card rounded-3xl p-6 w-full">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Hasil Prediksi Terbaru</p>
+        <h3 class="mt-2 text-2xl font-semibold text-[#0F172A]">Ringkasan laporan</h3>
+      </div>
+      <span class="rounded-full bg-[#e0f2fe] px-4 py-2 text-sm font-semibold text-[#2563EB]">5 entri terbaru</span>
+    </div>
+    <div class="overflow-x-auto w-full rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="px-5 py-4">ID</th>
+            <th class="px-5 py-4">Hasil</th>
+            <th class="px-5 py-4">Confidence</th>
+            <th class="px-5 py-4">User</th>
+            <th class="px-5 py-4">Tanggal</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          {% for p in latest_predictions %}
+          <tr class="transition hover:bg-slate-50">
+            <td class="px-5 py-4 font-medium text-[#0F172A]">{{ p.id }}</td>
+            <td class="px-5 py-4">{{ p.result }}</td>
+            <td class="px-5 py-4">
+              <div class="w-full max-w-[180px] rounded-full bg-slate-100">
+                <div class="h-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400" style="width: {{ p.confidence }}%"></div>
+              </div>
+              <span class="mt-2 inline-block text-xs text-slate-500">{{ p.confidence }}%</span>
+            </td>
+            <td class="px-5 py-4">{{ p.user }}</td>
+            <td class="px-5 py-4">{{ p.date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const distCtx = document.getElementById('distributionChart');
+  if (distCtx) {
+    new Chart(distCtx, {
+      type: 'doughnut',
+      data: {
+        labels: {{ prediction_distribution.labels|safe }},
+        datasets: [{
+          data: {{ prediction_distribution.values|safe }},
+          backgroundColor: ['#2563EB', '#06B6D4', '#38bdf8', '#0F172A'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {position:'bottom', labels:{color:'#475569', boxWidth:14, padding:16}},
+          tooltip: {backgroundColor:'#0F172A', titleColor:'#fff', bodyColor:'#fff'}
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

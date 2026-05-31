@@ -1,0 +1,46 @@
+{% extends 'admin_base.html' %}
+
+{% block page_actions %}
+  <a href="#" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800">Tambah Pengguna</a>
+{% endblock %}
+
+{% block content %}
+  <div class="glass-card rounded-3xl p-6">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Pengguna</p>
+        <h3 class="mt-2 text-2xl font-semibold text-slate-900">Kelola akun pengguna</h3>
+      </div>
+      <span class="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">Total: {{ stats.total_users }}</span>
+    </div>
+
+    <div class="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-slate-500">
+          <tr>
+            <th class="px-6 py-4">Nama</th>
+            <th class="px-6 py-4">Email</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4">Akses</th>
+            <th class="px-6 py-4">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          {% for user in users_list %}
+          <tr class="transition hover:bg-slate-50">
+            <td class="px-6 py-4 font-semibold text-slate-900">{{ user.name }}</td>
+            <td class="px-6 py-4">{{ user.email }}</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if user.status == 'Aktif' %}bg-emerald-100 text-emerald-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ user.status }}</span>
+            </td>
+            <td class="px-6 py-4">{{ user.access }}</td>
+            <td class="px-6 py-4">
+              <button class="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">Detail</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

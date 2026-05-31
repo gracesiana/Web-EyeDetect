@@ -58,6 +58,7 @@ body {
 /* INPUT */
 .input-group {
     position: relative;
+    width: 100%;
     max-width: 300px;
     margin: 0 auto 14px;
 }
@@ -70,6 +71,7 @@ body {
     border-radius: 8px;
     font-size: 14px;
     outline: none;
+    box-sizing: border-box;
 }
 
 .input-group input:focus {
@@ -95,7 +97,8 @@ body {
 
 /* BUTTON */
 .btn-login {
-    width: 300px;
+    width: 100%;
+    max-width: 300px;
     height: 42px;
     background: #1f6fe5;
     color: white;
@@ -136,7 +139,7 @@ a:hover {
         <i class="fa-solid fa-user"></i>
     </div>
 
-    <h2>Login User</h2>
+    <h2>Login</h2>
     <p>Silakan masuk untuk mengakses sistem monitoring kami</p>
 
     <!-- ERROR -->
@@ -167,6 +170,10 @@ a:hover {
 
         <button class="btn-login">Masuk</button>
     </form>
+
+    <p style="margin-top:14px; font-size:14px; color:#444;">
+        <a href="{% url 'admin_login' %}">Masuk sebagai Admin</a>
+    </p>
 
     <p style="margin-top:15px;">
         Belum punya akun?

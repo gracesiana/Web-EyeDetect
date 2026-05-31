@@ -1,562 +1,264 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cara Kerja - EyeDetect</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Tentang EyeDetect</title>
+
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
 
     <style>
-        * {
+
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
+            color: #0f172a;
         }
 
-        body {
-            background: #f7faff;
-            color: #17202a;
-            min-height: 100vh;
-            display: flex;
+        .container{
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
         }
 
-        .sidebar {
-            width: 280px;
-            min-height: 100vh;
-            background: #ffffff;
-            border-right: 1px solid #e5eaf2;
-            padding: 28px 22px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: fixed;
-            left: 0;
-            top: 0;
+        .hero{
+            text-align: center;
+            padding: 100px 20px 70px;
         }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 45px;
+        .hero h1{
+            font-size: 55px;
+            margin-bottom: 20px;
+            color: #0f172a;
         }
 
-        .logo-icon {
-            font-size: 34px;
-            color: #1473e6;
+        .hero p{
+            font-size: 20px;
+            line-height: 1.8;
+            color: #475569;
+            max-width: 850px;
+            margin: auto;
         }
 
-        .logo h2 {
-            font-size: 27px;
-            color: #11243d;
+        .section-title{
+            text-align: center;
+            margin-top: 80px;
+            margin-bottom: 50px;
         }
 
-        .logo h2 span {
-            color: #1473e6;
+        .section-title h2{
+            font-size: 42px;
+            color: #0f172a;
         }
 
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .steps{
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+            gap: 30px;
+            margin-bottom: 80px;
         }
 
-        .menu a {
-            text-decoration: none;
-            color: #344054;
-            font-size: 16px;
-            font-weight: 600;
-            padding: 16px 18px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
+        .card{
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             transition: 0.3s;
         }
 
-        .menu a i {
-            font-size: 19px;
-            width: 22px;
+        .card:hover{
+            transform: translateY(-8px);
         }
 
-        .menu a.active,
-        .menu a:hover {
-            background: #edf5ff;
-            color: #1473e6;
-        }
-
-        .sidebar-bottom {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .user-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px;
-            border-radius: 14px;
-            background: #f7faff;
-        }
-
-        .avatar {
-            width: 46px;
-            height: 46px;
+        .card-number{
+            width: 60px;
+            height: 60px;
+            background: #1d4ed8;
+            color: white;
             border-radius: 50%;
-            background: #e7f0ff;
-            color: #1473e6;
+            margin: auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 20px;
         }
 
-        .user-box h4 {
-            font-size: 15px;
-            color: #1d2939;
+        .card h3{
+            font-size: 25px;
+            margin-bottom: 15px;
         }
 
-        .user-box p {
-            font-size: 13px;
-            color: #667085;
+        .card p{
+            color: #64748b;
+            line-height: 1.8;
         }
 
-        .logout-btn {
-            width: 100%;
-            border: 1px solid #d8e1ec;
-            background: #ffffff;
-            color: #344054;
-            border-radius: 12px;
-            padding: 13px 16px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .about{
+            background: white;
+            padding: 70px;
+            border-radius: 30px;
+            margin-bottom: 80px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
         }
 
-        .main {
-            margin-left: 280px;
-            width: calc(100% - 280px);
-            min-height: 100vh;
-        }
-
-        .topbar {
-            height: 78px;
-            background: #ffffff;
-            border-bottom: 1px solid #e5eaf2;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 38px;
-        }
-
-        .topbar h1 {
-            font-size: 28px;
-            color: #101828;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            font-size: 16px;
-            color: #344054;
-        }
-
-        .topbar-right i {
-            font-size: 20px;
-            color: #101828;
-        }
-
-        .content {
-            padding: 34px 38px;
-        }
-
-        .panduan-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 34px;
-            box-shadow: 0 8px 25px rgba(16, 24, 40, 0.06);
-        }
-
-        .panduan-header {
-            text-align: center;
-            margin-bottom: 34px;
-        }
-
-        .badge {
-            display: inline-block;
-            background: #061b49;
-            color: #ffffff;
-            padding: 7px 22px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 800;
-            margin-bottom: 14px;
-        }
-
-        .panduan-header h2 {
-            color: #061b49;
-            font-size: 36px;
-            font-weight: 900;
-            margin-bottom: 12px;
-        }
-
-        .panduan-header p {
-            color: #667085;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 22px;
-            margin-bottom: 32px;
-        }
-
-        .step-card {
-            position: relative;
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 24px 16px;
-            text-align: center;
-            box-shadow: 0 7px 20px rgba(16, 24, 40, 0.10);
-            min-height: 260px;
-        }
-
-        .step-icon {
-            width: 88px;
-            height: 88px;
-            background: #edf5ff;
-            color: #1473e6;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 14px;
-            font-size: 38px;
-        }
-
-        .step-number {
-            width: 30px;
-            height: 30px;
-            background: #1473e6;
-            color: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-weight: 800;
-        }
-
-        .step-card h3 {
-            font-size: 15px;
-            color: #061b49;
-            margin-bottom: 14px;
-        }
-
-        .step-card p {
-            font-size: 13px;
-            color: #667085;
-            line-height: 1.6;
-        }
-
-        .arrow {
-            position: absolute;
-            right: -18px;
-            top: 112px;
-            width: 30px;
-            height: 30px;
-            background: #1473e6;
-            color: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
-        }
-
-        .note-panduan {
-            border: 1.5px solid #bcd8ff;
-            background: #f8fbff;
-            border-radius: 14px;
-            padding: 22px;
-            display: grid;
-            grid-template-columns: 80px 1fr 110px;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .note-icon,
-        .help-icon {
-            width: 64px;
-            height: 64px;
-            background: #e7f0ff;
-            color: #1473e6;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-        }
-
-        .note-content {
-            border-left: 1px solid #d4e5ff;
-            border-right: 1px solid #d4e5ff;
-            padding: 0 20px;
-        }
-
-        .note-content h3 {
-            color: #1473e6;
+        .about p{
+            line-height: 2;
             font-size: 18px;
-            margin-bottom: 8px;
+            color: #475569;
         }
 
-        .note-content p {
-            font-size: 13px;
-            color: #667085;
-            line-height: 1.5;
+        .tech-list{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
         }
 
-        .flow {
-            margin: 10px 0;
-            color: #1473e6;
-            font-size: 12px;
-            font-weight: 700;
+        .tech{
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: bold;
         }
 
-        .help-text {
+        .warning{
+            background: #fff7ed;
+            border-left: 6px solid #f97316;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 40px;
+        }
+
+        .warning h3{
+            color: #ea580c;
+        }
+
+        .cta{
             text-align: center;
-            color: #1473e6;
-            font-size: 12px;
-            font-weight: 700;
-            margin-top: 8px;
+            margin-bottom: 100px;
         }
 
-        @media (max-width: 1000px) {
-            .sidebar {
-                width: 230px;
-            }
-
-            .main {
-                margin-left: 230px;
-                width: calc(100% - 230px);
-            }
-
-            .steps {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .arrow {
-                display: none;
-            }
+        .cta a{
+            display: inline-block;
+            padding: 18px 40px;
+            background: #0f172a;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 18px;
+            transition: 0.3s;
         }
 
-        @media (max-width: 760px) {
-            body {
-                display: block;
-            }
-
-            .sidebar {
-                position: relative;
-                width: 100%;
-                min-height: auto;
-            }
-
-            .main {
-                margin-left: 0;
-                width: 100%;
-            }
-
-            .topbar {
-                padding: 0 20px;
-            }
-
-            .content {
-                padding: 24px 18px;
-            }
-
-            .steps,
-            .note-panduan {
-                grid-template-columns: 1fr;
-            }
-
-            .note-content {
-                border: none;
-                padding: 0;
-            }
+        .cta a:hover{
+            background: #1e293b;
         }
+
     </style>
-</head>
 
+</head>
 <body>
 
-    <aside class="sidebar">
-        <div>
-            <div class="logo">
-                <i class="fa-regular fa-eye logo-icon"></i>
-                <h2><span>Eye</span>Detect</h2>
-            </div>
+    <div class="container">
 
-            <nav class="menu">
-                <a href="{% url 'dashboard' %}">
-                    <i class="fa-solid fa-house"></i>
-                    Beranda
-                </a>
+        <section class="hero">
 
-                <a href="{% url 'cara_kerja' %}" class="active">
-                    <i class="fa-solid fa-book-open"></i>
-                    Cara Kerja/Panduan
-                </a>
+            <h1>Teknologi AI untuk Deteksi Penyakit Mata</h1>
 
-                <a href="{% url 'deteksi' %}" class="active">
-                    <i class="fa-solid fa-stethoscope"></i>
-                    Deteksi
-                </a>
+            <p>
+                EyeDetect adalah platform berbasis kecerdasan buatan yang membantu pengguna 
+                mendeteksi indikasi penyakit mata secara cepat melalui analisis citra mata. 
+                Sistem ini dirancang untuk memberikan hasil awal yang informatif, mudah dipahami, 
+                dan dapat diakses oleh siapa saja.
+            </p>
 
-                <a href="#">
-                    <i class="fa-regular fa-clock"></i>
-                    Riwayat Skrining
-                </a>
-
-                <a href="#">
-                    <i class="fa-regular fa-user"></i>
-                    Profil Saya
-                </a>
-
-                <a href="{% url 'pengaturan' %}">
-                    <i class="fa-solid fa-gear"></i>
-                    Pengaturan
-                </a>
-            </nav>
-        </div>
-
-        <div class="sidebar-bottom">
-            <div class="user-box">
-                <div class="avatar">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-
-                <div>
-                    <h4>Halo, {{ user.get_full_name|default:user.username }}</h4>
-                    <p>Pengguna</p>
-                </div>
-            </div>
-
-            <form action="{% url 'logout' %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" class="logout-btn">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    Keluar
-                </button>
-            </form>
-        </div>
-    </aside>
-
-    <main class="main">
-        <header class="topbar">
-            <h1>Cara Kerja/Panduan</h1>
-
-            <div class="topbar-right">
-                <i class="fa-regular fa-bell"></i>
-                <span>Halo, {{ user.get_full_name|default:user.username }}</span>
-            </div>
-        </header>
-
-        <section class="content">
-            <div class="panduan-card">
-                <div class="panduan-header">
-                    <div class="badge">PANDUAN</div>
-                    <h2>Cara Kerja EyeDetect</h2>
-                    <p>
-                        Ikuti langkah-langkah berikut untuk melakukan deteksi penyakit mata<br>
-                        dengan mudah dan akurat menggunakan EyeDetect.
-                    </p>
-                </div>
-
-                <div class="steps">
-                    <div class="step-card">
-                        <div class="step-icon">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div class="step-number">1</div>
-                        <h3>Daftar / Login</h3>
-                        <p>Buat akun terlebih dahulu atau masuk ke akun yang sudah ada.</p>
-                        <div class="arrow">
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-icon">
-                            <i class="fa-regular fa-image"></i>
-                        </div>
-                        <div class="step-number">2</div>
-                        <h3>Upload Gambar Retina</h3>
-                        <p>Unggah gambar retina (fundus) mata yang ingin dianalisis.</p>
-                        <div class="arrow">
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-icon">
-                            <i class="fa-solid fa-microchip"></i>
-                        </div>
-                        <div class="step-number">3</div>
-                        <h3>Proses Analisis AI</h3>
-                        <p>Sistem akan melakukan pra-pemrosesan dan menganalisis gambar menggunakan AI.</p>
-                        <div class="arrow">
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="step-card">
-                        <div class="step-icon">
-                            <i class="fa-regular fa-file-lines"></i>
-                        </div>
-                        <div class="step-number">4</div>
-                        <h3>Lihat Hasil Deteksi</h3>
-                        <p>Sistem menampilkan hasil prediksi dan visualisasi penjelasan secara informatif.</p>
-                    </div>
-                </div>
-
-                <div class="note-panduan">
-                    <div class="note-icon">
-                        <i class="fa-regular fa-clipboard"></i>
-                    </div>
-
-                    <div class="note-content">
-                        <h3>Catatan</h3>
-                        <p>Jika Anda merasa bingung, silakan ikuti urutan proses berikut:</p>
-
-                        <div class="flow">
-                            Daftar → Login → Upload Gambar → Analisis AI → Hasil Deteksi
-                        </div>
-
-                        <p>Jika masih mengalami kendala, jangan ragu untuk menghubungi kami.</p>
-                    </div>
-
-                    <div>
-                        <div class="help-icon">
-                            <i class="fa-solid fa-headset"></i>
-                        </div>
-                        <div class="help-text">
-                            Butuh bantuan?<br>
-                            Hubungi kami
-                        </div>
-                    </div>
-                </div>
-            </div>
         </section>
-    </main>
+
+        <div class="section-title">
+            <h2>Cara Kerja EyeDetect</h2>
+        </div>
+
+        <section class="steps">
+
+            <div class="card">
+                <div class="card-number">1</div>
+                <h3>Unggah Gambar</h3>
+                <p>
+                    Pengguna mengunggah gambar mata melalui sistem dengan mudah dan cepat.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-number">2</div>
+                <h3>AI Menganalisis</h3>
+                <p>
+                    Model AI akan memproses citra mata menggunakan teknologi deep learning.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-number">3</div>
+                <h3>Hasil Ditampilkan</h3>
+                <p>
+                    Sistem menampilkan hasil deteksi beserta informasi visual yang mudah dipahami.
+                </p>
+            </div>
+
+        </section>
+
+        <div class="section-title">
+            <h2>Mengapa EyeDetect Dibuat?</h2>
+        </div>
+
+        <section class="about">
+
+            <p>
+                Banyak masyarakat mengalami keterlambatan dalam mendeteksi penyakit mata 
+                karena keterbatasan akses, waktu, maupun biaya pemeriksaan kesehatan. 
+                EyeDetect hadir sebagai solusi awal berbasis AI untuk membantu meningkatkan 
+                kesadaran masyarakat terhadap kesehatan mata secara lebih cepat dan praktis.
+            </p>
+
+            <div class="tech-list">
+
+                <div class="tech">Django</div>
+                <div class="tech">TensorFlow</div>
+                <div class="tech">OpenCV</div>
+                <div class="tech">Deep Learning</div>
+                <div class="tech">Explainable AI</div>
+
+            </div>
+
+            <div class="warning">
+
+                <h3>Disclaimer</h3>
+
+                <p>
+                    Hasil deteksi dari EyeDetect bukan pengganti diagnosis dokter profesional. 
+                    Sistem ini hanya digunakan sebagai alat bantu deteksi awal berbasis AI.
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="cta">
+
+            <a href="/deteksi/">
+                Mulai Deteksi Sekarang
+            </a>
+
+        </section>
+
+    </div>
 
 </body>
 </html>

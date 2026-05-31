@@ -1,0 +1,75 @@
+{% load static %}
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EyeDetect Admin - {{ page_title }}</title>
+    <link rel="stylesheet" href="{% static 'admin/css/admin.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  </head>
+  <body class="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
+    <div class="min-h-screen md:flex">
+      <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-72 overflow-y-auto border-r border-slate-200/10 bg-[#0F172A] px-6 pb-8 pt-6 text-slate-100 shadow-xl shadow-slate-900/20 transition-transform duration-300 md:static md:translate-x-0 md:flex md:flex-col md:justify-between">
+        <div>
+          <div class="mb-10 flex items-center gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-3xl bg-[#2563EB] text-lg font-bold text-white shadow-lg shadow-[#0f172a33]">ED</div>
+            <div>
+              <p class="text-sm uppercase tracking-[0.3em] text-slate-400">EyeDetect</p>
+              <h1 class="text-xl font-semibold">AI Dashboard</h1>
+            </div>
+          </div>
+          <nav class="space-y-1 text-sm">
+            <a href="{% url 'admin_panel' %}" class="flex items-center gap-3 rounded-3xl px-4 py-3 transition duration-200 hover:bg-[#111f3a] {% if current_page == 'dashboard' %}bg-[#111f3a] font-semibold{% endif %}">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#111f3a] text-[#06B6D4]">D</span>
+              Dashboard
+            </a>
+            <a href="{% url 'admin_panel_dataset' %}" class="flex items-center gap-3 rounded-3xl px-4 py-3 transition duration-200 hover:bg-[#111f3a] {% if current_page == 'dataset' %}bg-[#111f3a] font-semibold{% endif %}">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#111f3a] text-[#2563EB]">DS</span>
+              Dataset Retina
+            </a>
+            <a href="{% url 'admin_panel_predictions' %}" class="flex items-center gap-3 rounded-3xl px-4 py-3 transition duration-200 hover:bg-[#111f3a] {% if current_page == 'predictions' %}bg-[#111f3a] font-semibold{% endif %}">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#111f3a] text-[#06B6D4]">P</span>
+              Hasil Prediksi
+            </a>
+            <a href="{% url 'admin_panel_model' %}" class="flex items-center gap-3 rounded-3xl px-4 py-3 transition duration-200 hover:bg-[#111f3a] {% if current_page == 'model' %}bg-[#111f3a] font-semibold{% endif %}">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#111f3a] text-[#93c5fd]">M</span>
+              Model CNN
+            </a>
+          </nav>
+        </div>
+        <div class="mt-10">
+          <a href="{% url 'logout' %}" class="flex items-center gap-3 rounded-3xl bg-[#2563EB] px-4 py-3 text-sm font-semibold text-white transition duration-200 hover:bg-[#1d4ed8]">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0F172A] text-[#06B6D4]">L</span>
+            Logout
+          </a>
+        </div>
+      </aside>
+      <main class="ml-0 min-h-screen flex-1 w-full bg-[#F8FAFC] px-4 pb-8 pt-5 md:ml-72 md:px-6 md:pt-6">
+        <div class="flex items-center justify-between gap-4 pb-3 md:flex-row md:items-center">
+          <div>
+            <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Admin Panel</p>
+            <h2 class="text-3xl font-semibold text-[#0F172A]">{{ page_title }}</h2>
+          </div>
+          <button id="mobileMenuButton" class="inline-flex items-center gap-2 rounded-3xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-[#0F172A] shadow-sm shadow-slate-300 transition hover:bg-slate-50 md:hidden">
+            Menu sidebar
+          </button>
+        </div>
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-[#334155]">Kelola dataset retina, hasil prediksi, dan performa model AI dalam satu platform.</div>
+          <div>{% block page_actions %}{% endblock %}</div>
+        </div>
+        <div class="space-y-6">{% block content %}{% endblock %}</div>
+      </main>
+    </div>
+    <script>
+      const sidebar = document.getElementById('sidebar');
+      const mobileButton = document.getElementById('mobileMenuButton');
+      mobileButton?.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+      });
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

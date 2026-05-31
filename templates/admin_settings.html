@@ -1,0 +1,58 @@
+{% extends 'admin_base.html' %}
+
+{% block page_actions %}
+  <button class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Simpan</button>
+{% endblock %}
+
+{% block content %}
+  <div class="grid gap-4 xl:grid-cols-2">
+    <div class="glass-card rounded-3xl p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Pengaturan Umum</p>
+          <h3 class="mt-2 text-2xl font-semibold text-slate-900">Preferensi aplikasi</h3>
+        </div>
+      </div>
+      <div class="mt-6 space-y-5">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">Nama Aplikasi</label>
+          <input type="text" value="{{ settings.app_name }}" class="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:border-sky-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">Email Admin</label>
+          <input type="email" value="{{ settings.admin_email }}" class="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:border-sky-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-700">Mode Sistem</label>
+          <select class="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:border-sky-400 focus:outline-none">
+            <option {% if settings.system_mode == 'Online' %}selected{% endif %}>Online</option>
+            <option {% if settings.system_mode == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-3xl p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Keamanan</p>
+          <h3 class="mt-2 text-2xl font-semibold text-slate-900">Kontrol akses</h3>
+        </div>
+      </div>
+      <div class="mt-6 space-y-4">
+        <label class="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500" {% if settings.email_notifications %}checked{% endif %} />
+          <span class="text-sm text-slate-700">Notifikasi Email</span>
+        </label>
+        <label class="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500" {% if settings.two_factor_auth %}checked{% endif %} />
+          <span class="text-sm text-slate-700">Autentikasi Dua Faktor</span>
+        </label>
+        <label class="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <input type="checkbox" class="h-5 w-5 rounded border-slate-300 text-sky-500 focus:ring-sky-500" {% if settings.maintenance_mode %}checked{% endif %} />
+          <span class="text-sm text-slate-700">Mode Maintenance</span>
+        </label>
+      </div>
+    </div>
+  </div>
+{% endblock %}
