@@ -11,6 +11,7 @@ from urllib3 import request
 
 from ai_model.predict import predict_image
 from ai_model.gradcam import generate_gradcam
+from appdeteksi.models import DetectionHistory
 
 
 def welcome(request):
@@ -149,6 +150,19 @@ def deteksi(request):
             print("FILEPATH:", filepath)
 
             hasil, confidence = predict_image(filepath)
+
+            print("HASIL:", hasil)
+            print("CONFIDENCE:", confidence)
+
+            if request.user.is_authenticated:
+
+                DetectionHistory.objects.create(
+                    user=request.user,
+                    image=filename,
+                    result=hasil,
+                    confidence=confidence
+                )
+
             gradcam_filename = "gradcam_" + filename
 
             gradcam_path = fs.path(gradcam_filename)
@@ -362,22 +376,22 @@ def admin_model_cnn(request):
     return render(request, 'admin_model_cnn.html', context)
 
 
+from django.contrib.auth.models import User
+
 def admin_users(request):
-    context = _get_admin_data()
-    users = []
-    for user in context['users_list']:
-        status = user.get('status', 'Aktif')
-        status_class = 'emerald' if status == 'Aktif' else 'amber' if status == 'Nonaktif' else 'slate'
-        users.append({
-            **user,
-            'status_class': status_class,
-        })
-    context.update({
-        'page_title': 'Pengguna',
-        'current_page': 'users',
-        'users_list': users,
-    })
-    return render(request, 'admin_users.html', context)
+
+    users = User.objects.all().order_by('-date_joined')
+
+    return render(
+        request,
+        'admin_users.html',
+        {
+            'page_title': 'Pengguna',
+            'current_page': 'users',
+            'users': users,
+            'total_users': users.count()
+        }
+    )
 
 
 def admin_settings(request):
@@ -404,10 +418,19 @@ def admin_activity(request):
 
 
 def admin_users(request):
-    context = _get_admin_data()
-    context.update({'page_title': 'Pengguna', 'current_page': 'users'})
-    return render(request, 'admin_users.html', context)
 
+    users = User.objects.all()
+
+    print("TOTAL USER:", users.count())
+
+    return render(
+        request,
+        'admin_users.html',
+        {
+            'users': users,
+            'total_users': users.count()
+        }
+    )
 
 def admin_settings(request):
     context = _get_admin_data()
