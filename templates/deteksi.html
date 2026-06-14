@@ -741,6 +741,68 @@
 
             </div>
 
+            <div class="panel" style="margin-top:20px;">
+            
+                <div class="panel-title">
+                    <i class="fa-solid fa-brain"></i>
+                    Tahap 4 - Feature Extraction MobileNetV2
+                </div>
+
+                {% if feature_vector %}
+
+                <div style="
+                    background:#f8faff;
+                    border:1px solid #dbe5f0;
+                    border-radius:10px;
+                    padding:15px;
+                    margin-bottom:15px;
+                ">
+
+                    <strong>Shape Feature Vector :</strong>
+                    {{ feature_shape }}
+
+                    <br><br>
+
+                    <strong>Total Feature MobileNetV2 :</strong>
+                    1280 Feature
+
+                </div>
+
+                <div style="
+                    background:#ffffff;
+                    border:1px solid #dbe5f0;
+                    border-radius:10px;
+                    padding:15px;
+                    max-height:300px;
+                    overflow:auto;
+                    font-family:monospace;
+                ">
+
+                    {% for item in feature_vector %}
+
+                        <div style="
+                            padding:5px;
+                            border-bottom:1px solid #eee;
+                        ">
+                            Feature {{ forloop.counter }}
+                            :
+                            {{ item|floatformat:6 }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="info-note" style="margin-top:15px;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    MobileNetV2 mengekstraksi pola retina menjadi 1280 fitur numerik sebelum proses klasifikasi penyakit mata.
+                </div>
+            </div>
+
+            {% endif %}
+
+        </div>
+
             <div class="how-card">
                 <div class="how-title">Cara Menggunakan</div>
 
@@ -786,6 +848,104 @@
                     </div>
                 </div>
             </div>
+
+            {% if filename %}
+
+            <div class="panel" style="max-width:880px;margin:0 auto 22px;">
+    
+                <div class="panel-title">
+                    <i class="fa-solid fa-microchip"></i>
+                    Proses AI EyeDetect
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+
+                    <div style="text-align:center;">
+                        <h4 style="margin-bottom:10px;">1. Gambar Asli</h4>
+
+                        <img
+                            src="/media/{{ filename }}"
+                            style="
+                                width:100%;
+                                max-height:220px;
+                                object-fit:contain;
+                                border-radius:10px;
+                                border:1px solid #dbe5f0;
+                            "
+                        >
+
+                        <p style="margin-top:10px;font-size:12px;color:#667085;">
+                            Citra retina yang diunggah user
+                        </p>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <h4 style="margin-bottom:10px;">2. Resize 224×224</h4>
+
+                        <img
+                            src="{{ resize_image }}"
+                            style="
+                                width:100%;
+                                max-height:220px;
+                                object-fit:contain;
+                                border-radius:10px;
+                                border:1px solid #dbe5f0;
+                                
+                            "
+                        >
+
+                        <p style="margin-top:10px;font-size:12px;color:#667085;">
+                            Input untuk MobileNetV2
+                        </p>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <h4 style="margin-bottom:10px;">3. Grad-CAM</h4>
+
+                        {% if gradcam_image %}
+                        <img
+                            src="{{ gradcam_image }}"
+                            style="
+                                width:100%;
+                                max-height:220px;
+                                object-fit:contain;
+                                border-radius:10px;
+                                border:1px solid #dbe5f0;
+                            "
+                        >
+                        {% endif %}
+
+                        <p style="margin-top:10px;font-size:12px;color:#667085;">
+                            Area yang diperhatikan AI
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="
+                margin-top:20px;
+                padding:15px;
+                background:#edf4ff;
+                border-radius:10px;
+            ">
+                <strong>Pipeline AI:</strong><br>
+
+                Retina Image
+                →
+                Resize 224×224
+                →
+                Normalization
+                →
+                MobileNetV2
+                →
+                Classification
+                →
+                Grad-CAM
+            </div>
+
+        </div>
+
+        {% endif %}
 
         </section>
 

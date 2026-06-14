@@ -17,6 +17,31 @@
             padding: 0;
             box-sizing: border-box;
             font-family: Arial, Helvetica, sans-serif;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        
+        *::before,
+        *::after {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        html {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        body::before {
+            content: "" !important;
+            display: none !important;
+        }
+
+        html::before,
+        html::after {
+            display: none !important;
         }
 
         html, body {
@@ -24,10 +49,14 @@
             min-height: 100%;
             overflow-x: hidden;
             scroll-behavior: smooth;
+            border: none !important;
+            outline: none !important;
         }
 
         body {
             background: #ffffff;
+            border: none !important;
+            outline: none !important;
         }
 
         .page {
@@ -35,6 +64,7 @@
             min-height: 100vh;
             background: white;
             overflow-x: hidden;
+            border: none !important;
         }
 
         /* NAVBAR */
@@ -46,6 +76,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 70px;
+            border: none !important;
+            box-shadow: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
         }
 
         .logo {
@@ -96,9 +130,18 @@
             position: relative;
             width: 100%;
             min-height: calc(100vh - 85px);
-            background: url('{% static "images/background.jpg" %}');
+
+            background: 
+                linear-gradient(
+                 rgba(255,255,255,0.7),
+                 rgba(255,255,255,0.7)
+            ),
+            url('{% static "static/images/LOGO_EYEDETECT.png" %}');
+
             background-size: cover;
             background-position: center right;
+            background-repeat: no-repeat;
+            
             display: flex;
             align-items: center;
             padding: 60px 85px;
@@ -111,10 +154,10 @@
             inset: 0;
             background: linear-gradient(
                 to right,
-                rgba(255, 255, 255, 0.97) 0%,
-                rgba(255, 255, 255, 0.90) 35%,
-                rgba(255, 255, 255, 0.45) 65%,
-                rgba(255, 255, 255, 0.05) 100%
+                rgba(255, 255, 255, 0.65) 0%,
+                rgba(255, 255, 255, 0.55) 35%,
+                rgba(255, 255, 255, 0.25) 65%,
+                rgba(255, 255, 255, 0.00) 100%
             );
         }
 
@@ -180,6 +223,7 @@
             background: white;
             text-align: center;
             padding: 50px 80px 80px;
+            border: none !important;
         }
 
         .section-badge {
@@ -268,8 +312,8 @@
             min-height: 560px;
             padding: 50px 70px 45px;
             overflow: hidden;
-            border-top: 3px solid #1e91e8;
-            border-bottom: 3px solid #1e91e8;
+            border-top: none !important;
+            border-bottom: none !important;
             background:
                 linear-gradient(rgba(255,255,255,0.90), rgba(255,255,255,0.94)),
                 url('{% static "images/background.jpg" %}');
@@ -286,11 +330,11 @@
             width: 310px;
             height: 310px;
             border-radius: 50%;
-            border: 1px dashed rgba(30, 145, 232, 0.25);
-            background:
-                radial-gradient(circle, rgba(30,145,232,0.25) 2px, transparent 3px);
+            border: none;
+            background: transparent;
             background-size: 30px 30px;
-            opacity: 0.7;
+            opacity: 0;
+            display: none;
         }
 
         .section-header {
@@ -617,6 +661,45 @@
                 width: 130px;
             }
         }
+
+        /* FORCE REMOVE ALL SHADOWS AND BORDERS */
+        html, body, .page, .navbar, header, section, div {
+            box-shadow: none !important;
+            border: none !important;
+            outline: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            border-image: none !important;
+            text-shadow: none !important;
+        }
+
+        /* Remove any potential shadow from external stylesheets */
+        [style*="box-shadow"] {
+            box-shadow: none !important;
+        }
+
+        [style*="border"] {
+            border: none !important;
+        }
+
+        /* NUCLEAR - REMOVE EVERYTHING */
+        html {
+            border: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            box-shadow: inset 0 0 0 transparent !important;
+        }
+
+        body {
+            border: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
     </style>
 </head>
 
@@ -626,7 +709,7 @@
         <!-- NAVBAR -->
         <header class="navbar">
             <div class="logo">
-                <img src="{% static 'images/logo.png' %}" alt="Logo EyeDetect" />
+                <img src="{% static 'images/background_eyedetect.png' %}" alt="Logo EyeDetect" />
             </div>
 
             <nav class="nav-menu">

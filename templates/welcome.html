@@ -270,12 +270,16 @@
             overflow: hidden;
             border-top: 3px solid #1e91e8;
             border-bottom: 3px solid #1e91e8;
-            background:
-                linear-gradient(rgba(255,255,255,0.90), rgba(255,255,255,0.94)),
-                url('{% static "images/background.jpg" %}');
+            background-image:
+                linear-gradient(
+                    rgba(255,255,255,0.88),
+                    rgba(255,255,255,0.92)
+                ),
+                url("{% static 'images/background_eyedetect.png' %}");
+
             background-repeat: no-repeat;
-            background-size: 420px;
-            background-position: top right;
+            background-size: cover;
+            background-position: center;
         }
 
         .why-section::before {

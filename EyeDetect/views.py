@@ -1,6 +1,8 @@
+from fileinput import filename
 import math
 import os
 from datetime import datetime, timedelta
+from pyexpat import features
 
 from django.conf import settings
 from django.contrib import messages
@@ -9,22 +11,20 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from urllib3 import request
 
-from ai_model.predict import predict_image
+from ai_model.predict import predict_image, extract_features
 from ai_model.gradcam import generate_gradcam
 from appdeteksi.models import DetectionHistory
 
-
+from PIL import Image
+ 
 def welcome(request):
     return render(request, 'welcome.html')
-
 
 def show_login(request):
     return render(request, 'login.html')
 
-
 def show_admin_login(request):
     return render(request, 'admin_login.html')
-
 
 def login_proses(request):
     if request.method != 'POST':
@@ -110,31 +110,20 @@ def logout_user(request):
     logout(request)
     return redirect('login')
 
-
-def dashboard(request):
-    screening_count = 0
-    return render(request, 'dashboard.html', {
-        'screeningCount': screening_count,
-    })
-
 from django.core.files.storage import FileSystemStorage
 
 def deteksi(request):
 
-    print("METHOD:", request.method)
-
     hasil = None
     confidence = None
     filename = None
+    resize_image = None
     gradcam_image = None
+    feature_vector = None
 
     if request.method == "POST":
 
-        print("POST MASUK")
-
         retina_image = request.FILES.get("retina_image")
-
-        print("FILE:", retina_image)
 
         if retina_image:
 
@@ -147,12 +136,46 @@ def deteksi(request):
 
             filepath = fs.path(filename)
 
-            print("FILEPATH:", filepath)
+            # Resize 224x224
+            img = Image.open(filepath)
 
-            hasil, confidence = predict_image(filepath)
+            img_resize = img.resize((224,224))
 
-            print("HASIL:", hasil)
-            print("CONFIDENCE:", confidence)
+            resize_filename = "resize_" + filename
+
+            resize_path = fs.path(resize_filename)
+
+            img_resize.save(resize_path)
+
+            original_size = Image.open(filepath).size
+            resize_size = Image.open(resize_path).size
+
+            print("UKURAN ASLI :", original_size)
+            print("UKURAN RESIZE :", resize_size)
+
+            resize_image = "/media/" + resize_filename
+
+            # CNN Prediction
+            hasil, confidence = predict_image(resize_path)
+
+            # Feature Extraction MobileNetV2
+            features = extract_features(resize_path)
+
+            feature_vector = features.flatten()[:20].tolist()
+
+            feature_shape = features.shape
+
+            # GradCAM
+            gradcam_filename = "gradcam_" + filename
+
+            gradcam_path = fs.path(gradcam_filename)
+
+            generate_gradcam(
+                resize_path,
+                gradcam_path
+            )
+
+            gradcam_image = "/media/" + gradcam_filename
 
             if request.user.is_authenticated:
 
@@ -163,30 +186,26 @@ def deteksi(request):
                     confidence=confidence
                 )
 
-            gradcam_filename = "gradcam_" + filename
-
-            gradcam_path = fs.path(gradcam_filename)
-
-            generate_gradcam(
-                filepath,
-                gradcam_path
-            )
-
-            gradcam_image = "/media/" + gradcam_filename
-
-            print("HASIL:", hasil)
-            print("CONFIDENCE:", confidence)
-
     return render(
-    request,
-    "deteksi.html",
-    {
-        "hasil": hasil,
-        "confidence": confidence,
-        "filename": filename,
-        "gradcam_image": gradcam_image,
-    }
-)
+        request,
+        "deteksi.html",
+        {
+            "hasil": hasil,
+            "confidence": confidence,
+            "filename": filename,
+            "resize_image": resize_image,
+            "gradcam_image": gradcam_image,
+
+            "feature_vector": feature_vector,
+            "feature_shape": feature_shape if filename else None,
+        }
+    )
+
+def dashboard(request):
+    screening_count = 0
+    return render(request, 'dashboard.html', {
+        'screeningCount': screening_count,
+    })
 
 def cara_kerja(request):
     return render(request, 'cara-kerja.html')
