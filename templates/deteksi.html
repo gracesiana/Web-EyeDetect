@@ -1,10 +1,12 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mulai Deteksi - EyeDetect</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
@@ -408,6 +410,548 @@
             align-items: center;
         }
 
+        .ai-pipeline-section {
+            width: 100%;
+            max-width: 1120px;
+            margin: 0 auto 24px;
+            background: #ffffff;
+            border: 1px solid #dfe9f7;
+            border-radius: 14px;
+            box-shadow: 0 12px 28px rgba(6, 27, 73, 0.08);
+            padding: 24px;
+        }
+
+        .pipeline-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .pipeline-heading h3 {
+            font-size: 22px;
+            font-weight: 900;
+            color: #061b49;
+            margin-bottom: 4px;
+        }
+
+        .pipeline-heading p {
+            font-size: 13px;
+            color: #667085;
+            margin: 0;
+        }
+
+        .pipeline-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eaf8f0;
+            color: #17613a;
+            border: 1px solid #bce4ca;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .pipeline-progress {
+            display: none;
+        }
+
+        .pipeline-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .pipeline-stage {
+            display: grid;
+            grid-template-columns: 150px minmax(0, 1fr);
+            gap: 16px;
+            position: relative;
+        }
+
+        .pipeline-stage-rail {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #667085;
+            font-size: 13px;
+            font-weight: 800;
+            padding-top: 8px;
+        }
+
+        .pipeline-stage-rail::after {
+            content: "";
+            position: absolute;
+            left: 19px;
+            top: 50px;
+            bottom: -24px;
+            width: 2px;
+            background: #cfe0f6;
+            z-index: 0;
+        }
+
+        .pipeline-stage:last-child .pipeline-stage-rail::after {
+            display: none;
+        }
+
+        .pipeline-stage-label {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            line-height: 1.25;
+        }
+
+        .pipeline-stage-label strong {
+            color: #061b49;
+            font-size: 13px;
+        }
+
+        .pipeline-dot {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            background: #1473e6;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            border: 4px solid #ddecff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pipeline-stage-content {
+            min-width: 0;
+        }
+
+        .pipeline-card {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #e1eaf7;
+            overflow: visible;
+        }
+
+        .pipeline-card .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .pipeline-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 900;
+            color: #061b49;
+            margin-bottom: 12px;
+        }
+
+        .pipeline-card-title i {
+            color: #1473e6;
+        }
+
+        .pipeline-card-layout {
+            display: grid;
+            grid-template-columns: minmax(220px, 0.85fr) minmax(260px, 1fr);
+            gap: 22px;
+            align-items: center;
+        }
+
+        .feature-extraction-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .pipeline-stage-group {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .pipeline-image-frame {
+            aspect-ratio: 4 / 3;
+            border-radius: 8px;
+            border: 1px solid #dbe7f5;
+            background: #f8fbff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .pipeline-image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .processed-image {
+            filter: contrast(1.12) saturate(0.9) brightness(1.04);
+        }
+
+        .pipeline-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .pipeline-meta li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 1px solid #eef3fb;
+            padding-bottom: 7px;
+            font-size: 12px;
+            color: #667085;
+        }
+
+        .pipeline-meta strong {
+            color: #061b49;
+            font-size: 12px;
+        }
+
+        .pipeline-summary {
+            color: #667085;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 10px 0 0;
+        }
+
+        .augmentation-variants {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .augmentation-tile {
+            position: relative;
+            height: 112px;
+            border: 1px solid #dbe7f5;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #061b49;
+        }
+
+        .augmentation-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s ease;
+        }
+
+        .augmentation-flip img {
+            transform: scaleX(-1);
+        }
+
+        .augmentation-rotate img {
+            transform: rotate(9deg) scale(1.12);
+        }
+
+        .augmentation-zoom img {
+            transform: scale(1.25);
+        }
+
+        .augmentation-tile span {
+            position: absolute;
+            left: 7px;
+            right: 7px;
+            bottom: 7px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            border-radius: 999px;
+            background: rgba(6, 27, 73, 0.82);
+            color: #ffffff;
+            padding: 5px 6px;
+            font-size: 10px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .feature-map-frame {
+            position: relative;
+            background: #061b49;
+        }
+
+        .feature-map-frame img {
+            object-fit: cover;
+        }
+
+        .feature-map-badge {
+            position: absolute;
+            left: 10px;
+            bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(6, 27, 73, 0.84);
+            color: #bff5ff;
+            border: 1px solid rgba(101, 214, 255, 0.55);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 900;
+            backdrop-filter: blur(6px);
+        }
+
+        .feature-tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #eaf3ff;
+            color: #1473e6;
+            border: 1px solid #b8d6ff;
+            cursor: help;
+            margin-left: auto;
+        }
+
+        .feature-tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 230px;
+            background: #061b49;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.4;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-4px);
+            transition: 0.18s ease;
+            z-index: 5;
+            box-shadow: 0 10px 22px rgba(6, 27, 73, 0.22);
+        }
+
+        .feature-tooltip:hover::after,
+        .feature-tooltip:focus::after {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feature-process-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .feature-process-item {
+            display: grid;
+            grid-template-columns: 34px 1fr;
+            gap: 9px;
+            padding: 9px;
+            border: 1px solid #e1eaf7;
+            border-radius: 8px;
+            background: #f8fbff;
+        }
+
+        .feature-process-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: #eaf3ff;
+            color: #1473e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .feature-process-content strong {
+            display: block;
+            color: #061b49;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        .feature-process-content span {
+            display: block;
+            color: #1473e6;
+            font-size: 11px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        .feature-process-content p {
+            color: #667085;
+            font-size: 11px;
+            line-height: 1.35;
+            margin: 4px 0 0;
+        }
+
+        .feature-vector-output {
+            margin-top: 12px;
+            border: 1px solid #cfe0f6;
+            background: #f8fbff;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .feature-vector-output h4 {
+            font-size: 12px;
+            font-weight: 900;
+            color: #061b49;
+            margin-bottom: 8px;
+        }
+
+        .feature-vector-formula {
+            border-radius: 8px;
+            background: #061b49;
+            color: #dff7ff;
+            padding: 9px 10px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.45;
+            margin-bottom: 9px;
+        }
+
+        .feature-vector-values {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 7px;
+        }
+
+        .feature-vector-values span {
+            border: 1px solid #dbe7f5;
+            border-radius: 7px;
+            background: #ffffff;
+            color: #061b49;
+            padding: 6px 7px;
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .xai-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #bce4ca;
+            background: #eaf8f0;
+            color: #17613a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 14px;
+        }
+
+        .xai-explanation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .xai-box {
+            border: 1px solid #dbe7f5;
+            background: #f8fbff;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .xai-box strong {
+            display: block;
+            color: #061b49;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .xai-box p {
+            color: #667085;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .pipeline-info-note {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 16px;
+            border: 1px solid #9fc4ff;
+            background: #f2f7ff;
+            color: #1473e6;
+            border-radius: 8px;
+            padding: 11px 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .classification-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #f8fbff;
+            border: 1px solid #dbe7f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .classification-label strong {
+            font-size: 16px;
+            color: #061b49;
+        }
+
+        .confidence-pill {
+            background: #eaf8f0;
+            color: #17613a;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: 82px 1fr 44px;
+            gap: 8px;
+            align-items: center;
+            font-size: 11px;
+            color: #667085;
+            margin-bottom: 8px;
+        }
+
+        .score-row .progress {
+            height: 7px;
+            background: #e7edf7;
+        }
+
+        .gradcam-empty {
+            color: #8494ad;
+            font-size: 12px;
+            text-align: center;
+            padding: 18px;
+        }
+
         .how-card {
             max-width: 880px;
             margin: 0 auto 0;
@@ -495,6 +1039,26 @@
             .how-steps {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .pipeline-heading {
+                flex-direction: column;
+            }
+
+            .pipeline-stage {
+                grid-template-columns: 130px minmax(0, 1fr);
+                gap: 12px;
+            }
+
+            .pipeline-card-layout,
+            .feature-extraction-layout {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .pipeline-stage-group,
+            .xai-explanation-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 760px) {
@@ -523,6 +1087,32 @@
 
             .how-steps {
                 grid-template-columns: 1fr;
+            }
+
+            .ai-pipeline-section {
+                padding: 18px;
+            }
+
+            .pipeline-stage {
+                grid-template-columns: 1fr;
+            }
+
+            .pipeline-stage-rail {
+                align-items: center;
+                padding-top: 0;
+            }
+
+            .pipeline-stage-rail::after {
+                display: none;
+            }
+
+            .pipeline-card .card-body {
+                padding: 16px;
+            }
+
+            .augmentation-variants,
+            .feature-vector-values {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             .footer-bar {
@@ -616,7 +1206,7 @@
                 <p>Unggah citra retina untuk memulai proses analisis penyakit mata.</p>
             </div>
 
-            <form action="#" method="POST" enctype="multipart/form-data">
+<form action="#" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <input
@@ -644,9 +1234,7 @@
                         <img id="uploadPreview" alt="Preview Gambar Retina">
                     </label>
 
-                    <input type="file" name="retina_image" id="retinaImage" accept="image/png,image/jpeg,image/jpg" hidden>
-
-                    <div class="upload-info" id="fileName">Belum ada file dipilih</div>
+                    <div class="upload-info" id="fileName">{{ filename|default:"Belum ada file dipilih" }}</div>
                     <div class="file-format">Format: JPG, JPEG, PNG</div>
 
                     <button type="button" class="choose-btn" onclick="document.getElementById('retinaImage').click()">
@@ -671,12 +1259,16 @@
                     </div>
 
                     <div class="preview-box">
-                        <div class="preview-empty" id="previewEmpty">
+                        <div class="preview-empty" id="previewEmpty" {% if uploaded_image %}style="display:none"{% endif %}>
                             <i class="fa-regular fa-image"></i>
                             <p>Gambar yang Anda unggah<br>akan ditampilkan di sini.</p>
                         </div>
 
-                        <img id="bigPreview" alt="Pratinjau Gambar Retina">
+                        <img
+                            id="bigPreview"
+                            alt="Pratinjau Gambar Retina"
+                            {% if uploaded_image %}src="{{ uploaded_image }}" style="display:block"{% endif %}
+                        >
                     </div>
                 </div>
 
@@ -690,7 +1282,7 @@
                         <div class="result-row">
                             <i class="fa-regular fa-file"></i>
                             <strong>Nama File</strong>
-                            <span id="resultFileName">-</span>
+                            <span id="resultFileName">{{ filename|default:"-" }}</span>
                         </div>
 
                         <div class="result-row">
@@ -741,67 +1333,316 @@
 
             </div>
 
-            <div class="panel" style="margin-top:20px;">
-            
-                <div class="panel-title">
-                    <i class="fa-solid fa-brain"></i>
-                    Tahap 4 - Feature Extraction MobileNetV2
-                </div>
-
-                {% if feature_vector %}
-
-                <div style="
-                    background:#f8faff;
-                    border:1px solid #dbe5f0;
-                    border-radius:10px;
-                    padding:15px;
-                    margin-bottom:15px;
-                ">
-
-                    <strong>Shape Feature Vector :</strong>
-                    {{ feature_shape }}
-
-                    <br><br>
-
-                    <strong>Total Feature MobileNetV2 :</strong>
-                    1280 Feature
-
-                </div>
-
-                <div style="
-                    background:#ffffff;
-                    border:1px solid #dbe5f0;
-                    border-radius:10px;
-                    padding:15px;
-                    max-height:300px;
-                    overflow:auto;
-                    font-family:monospace;
-                ">
-
-                    {% for item in feature_vector %}
-
-                        <div style="
-                            padding:5px;
-                            border-bottom:1px solid #eee;
-                        ">
-                            Feature {{ forloop.counter }}
-                            :
-                            {{ item|floatformat:6 }}
+            {% if pipeline_data %}
+                <section class="ai-pipeline-section">
+                    <div class="pipeline-heading">
+                        <div>
+                            <h3>Visualisasi Alur AI</h3>
+                            <p>Alur pemrosesan citra retina dari unggah hingga Explainable AI.</p>
                         </div>
 
-                    {% endfor %}
+                        <div class="pipeline-badge">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Pipeline Selesai
+                        </div>
+                    </div>
 
-                </div>
+                    <div class="pipeline-timeline" aria-label="AI pipeline progress">
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">1</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Unggah</strong>
+                                    Gambar Retina
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-regular fa-image"></i>
+                                            Upload Retina Image
+                                        </div>
 
-                <div class="info-note" style="margin-top:15px;">
-                    <i class="fa-solid fa-circle-info"></i>
-                    MobileNetV2 mengekstraksi pola retina menjadi 1280 fitur numerik sebelum proses klasifikasi penyakit mata.
-                </div>
-            </div>
+                                        <div class="pipeline-card-layout">
+                                            <div class="pipeline-image-frame">
+                                                <img src="{{ pipeline_data.uploaded_image }}" alt="Uploaded retina image">
+                                            </div>
 
+                                            <ul class="pipeline-meta">
+                                                <li><strong>File</strong><span>{{ pipeline_data.file_name }}</span></li>
+                                                <li><strong>Input</strong><span>Fundus Retina</span></li>
+                                                <li><strong>Status</strong><span class="text-success fw-bold">Uploaded</span></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">2</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Hasil</strong>
+                                    Pra-pemrosesan
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                            Preprocessing Result
+                                        </div>
+
+                                        <div class="pipeline-card-layout">
+                                            <div class="pipeline-image-frame">
+                                                <img class="processed-image" src="{{ pipeline_data.preprocessing.image }}" alt="Preprocessing result">
+                                            </div>
+
+                                            <div>
+                                                <ul class="pipeline-meta">
+                                                    {% for step in pipeline_data.preprocessing.steps %}
+                                                        <li><strong>{{ step.label }}</strong><span>{{ step.value }}</span></li>
+                                                    {% endfor %}
+                                                </ul>
+
+                                                <p class="pipeline-summary">{{ pipeline_data.preprocessing.summary }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">3</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Data</strong>
+                                    Augmentation
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-solid fa-shuffle"></i>
+                                            Data Augmentation
+                                        </div>
+
+                                        <div class="pipeline-card-layout">
+                                            <div class="augmentation-variants">
+                                                {% for variant in pipeline_data.augmentation.variants %}
+                                                    <div class="augmentation-tile {{ variant.class_name }}">
+                                                        <img src="{{ pipeline_data.augmentation.image }}" alt="{{ variant.label }} augmentation">
+                                                        <span>
+                                                            <i class="{{ variant.icon }}"></i>
+                                                            {{ variant.label }}
+                                                        </span>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+
+                                            <div>
+                                                <ul class="pipeline-meta">
+                                                    {% for step in pipeline_data.augmentation.steps %}
+                                                        <li><strong>{{ step.label }}</strong><span>{{ step.value }}</span></li>
+                                                    {% endfor %}
+                                                </ul>
+
+                                                <p class="pipeline-summary">{{ pipeline_data.augmentation.summary }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">4</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Ekstraksi</strong>
+                                    Fitur
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-solid fa-brain"></i>
+                                            Ekstraksi Fitur
+                                            <span
+                                                class="feature-tooltip"
+                                                tabindex="0"
+                                                data-tooltip="Peta fitur merepresentasikan pola yang dipelajari oleh CNN sebelum klasifikasi."
+                                                aria-label="Peta fitur merepresentasikan pola yang dipelajari oleh CNN sebelum klasifikasi."
+                                            >
+                                                <i class="fa-solid fa-info"></i>
+                                            </span>
+                                        </div>
+
+                                        <div class="feature-extraction-layout">
+                                            <ul class="pipeline-meta">
+                                                <li><strong>Model</strong><span>{{ pipeline_data.feature_extraction.model }}</span></li>
+                                                <li><strong>Feature Vector</strong><span>{{ pipeline_data.feature_extraction.feature_vector }}</span></li>
+                                                <li><strong>Processing Time</strong><span>{{ pipeline_data.feature_extraction.processing_time }}</span></li>
+                                            </ul>
+
+                                            <div class="feature-vector-output">
+                                                <h4>Output Feature Vector</h4>
+                                                <div class="feature-vector-formula">
+                                                    {{ pipeline_data.feature_extraction.vector_preview.formula }}<br>
+                                                    F: {{ pipeline_data.feature_extraction.vector_preview.source_shape }} -> v: {{ pipeline_data.feature_extraction.vector_preview.output_shape }}
+                                                </div>
+                                                <div class="feature-vector-values">
+                                                    {% for vector in pipeline_data.feature_extraction.vector_preview.values %}
+                                                        <span>{{ vector.index }} = {{ vector.value }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            <div class="feature-process-list">
+                                                {% for process in pipeline_data.feature_extraction.processes %}
+                                                    <div class="feature-process-item">
+                                                        <div class="feature-process-icon">
+                                                            <i class="{{ process.icon }}"></i>
+                                                        </div>
+                                                        <div class="feature-process-content">
+                                                            <strong>{{ process.label }}</strong>
+                                                            <span>{{ process.value }}</span>
+                                                            <p>{{ process.detail }}</p>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <p class="pipeline-summary">{{ pipeline_data.feature_extraction.summary }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">5</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Hasil</strong>
+                                    Klasifikasi
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="pipeline-stage-group">
+                                    <div class="card pipeline-card shadow-sm">
+                                        <div class="card-body">
+                                            <div class="pipeline-card-title">
+                                                <i class="fa-solid fa-bullseye"></i>
+                                                Classification Result
+                                            </div>
+
+                                            <div class="classification-label">
+                                                <div>
+                                                    <span class="d-block text-muted small">Prediksi</span>
+                                                    <strong>{{ pipeline_data.classification.label }}</strong>
+                                                </div>
+                                                <span class="confidence-pill">{{ pipeline_data.classification.confidence }}%</span>
+                                            </div>
+
+                                            {% for score in pipeline_data.classification.scores %}
+                                                <div class="score-row">
+                                                    <span>{{ score.label }}</span>
+                                                    <div class="progress" role="progressbar" aria-label="{{ score.label }}" aria-valuenow="{{ score.value }}" aria-valuemin="0" aria-valuemax="100">
+                                                        <div class="progress-bar {% if forloop.first %}bg-success{% else %}bg-info{% endif %}" style="width: {{ score.value }}%"></div>
+                                                    </div>
+                                                    <strong>{{ score.value }}%</strong>
+                                                </div>
+                                            {% endfor %}
+
+                                            <p class="pipeline-summary">{{ pipeline_data.classification.summary }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="card pipeline-card shadow-sm">
+                                        <div class="card-body">
+                                            <div class="pipeline-card-title">
+                                                <i class="fa-solid fa-fire-flame-curved"></i>
+                                                Explainable AI (Grad-CAM)
+                                            </div>
+
+                                            <div class="pipeline-image-frame">
+                                                {% if pipeline_data.gradcam.image %}
+                                                    <img src="{{ pipeline_data.gradcam.image }}" alt="Grad-CAM heatmap">
+                                                {% else %}
+                                                    <div class="gradcam-empty">
+                                                        <i class="fa-regular fa-eye d-block fs-3 mb-2"></i>
+                                                        Grad-CAM belum tersedia
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <ul class="pipeline-meta">
+                                                <li><strong>Method</strong><span>Grad-CAM</span></li>
+                                                <li><strong>Output</strong><span>Heatmap</span></li>
+                                                <li><strong>Status</strong><span class="text-success fw-bold">Generated</span></li>
+                                            </ul>
+
+                                            <p class="pipeline-summary">{{ pipeline_data.gradcam.summary }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">6</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Penjelasan</strong>
+                                    AI (XAI)
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-regular fa-comment-dots"></i>
+                                            Penjelasan AI
+                                        </div>
+
+                                        <div class="xai-status">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                            {{ pipeline_data.explanation.status }}
+                                        </div>
+
+                                        <div class="xai-explanation-grid">
+                                            <div class="xai-box">
+                                                <strong>Fokus Heatmap</strong>
+                                                <p>{{ pipeline_data.explanation.focus }}</p>
+                                            </div>
+                                            <div class="xai-box">
+                                                <strong>Alasan Model</strong>
+                                                <p>{{ pipeline_data.explanation.reason }}</p>
+                                            </div>
+                                            <div class="xai-box">
+                                                <strong>Catatan</strong>
+                                                <p>{{ pipeline_data.explanation.note }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="pipeline-info-note">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            Seluruh pipeline diproses otomatis dari unggah gambar hingga penjelasan hasil.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             {% endif %}
-
-        </div>
 
             <div class="how-card">
                 <div class="how-title">Cara Menggunakan</div>
@@ -848,104 +1689,6 @@
                     </div>
                 </div>
             </div>
-
-            {% if filename %}
-
-            <div class="panel" style="max-width:880px;margin:0 auto 22px;">
-    
-                <div class="panel-title">
-                    <i class="fa-solid fa-microchip"></i>
-                    Proses AI EyeDetect
-                </div>
-
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
-
-                    <div style="text-align:center;">
-                        <h4 style="margin-bottom:10px;">1. Gambar Asli</h4>
-
-                        <img
-                            src="/media/{{ filename }}"
-                            style="
-                                width:100%;
-                                max-height:220px;
-                                object-fit:contain;
-                                border-radius:10px;
-                                border:1px solid #dbe5f0;
-                            "
-                        >
-
-                        <p style="margin-top:10px;font-size:12px;color:#667085;">
-                            Citra retina yang diunggah user
-                        </p>
-                    </div>
-
-                    <div style="text-align:center;">
-                        <h4 style="margin-bottom:10px;">2. Resize 224×224</h4>
-
-                        <img
-                            src="{{ resize_image }}"
-                            style="
-                                width:100%;
-                                max-height:220px;
-                                object-fit:contain;
-                                border-radius:10px;
-                                border:1px solid #dbe5f0;
-                                
-                            "
-                        >
-
-                        <p style="margin-top:10px;font-size:12px;color:#667085;">
-                            Input untuk MobileNetV2
-                        </p>
-                    </div>
-
-                    <div style="text-align:center;">
-                        <h4 style="margin-bottom:10px;">3. Grad-CAM</h4>
-
-                        {% if gradcam_image %}
-                        <img
-                            src="{{ gradcam_image }}"
-                            style="
-                                width:100%;
-                                max-height:220px;
-                                object-fit:contain;
-                                border-radius:10px;
-                                border:1px solid #dbe5f0;
-                            "
-                        >
-                        {% endif %}
-
-                        <p style="margin-top:10px;font-size:12px;color:#667085;">
-                            Area yang diperhatikan AI
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="
-                margin-top:20px;
-                padding:15px;
-                background:#edf4ff;
-                border-radius:10px;
-            ">
-                <strong>Pipeline AI:</strong><br>
-
-                Retina Image
-                →
-                Resize 224×224
-                →
-                Normalization
-                →
-                MobileNetV2
-                →
-                Classification
-                →
-                Grad-CAM
-            </div>
-
-        </div>
-
-        {% endif %}
 
         </section>
 

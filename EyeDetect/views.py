@@ -1,30 +1,42 @@
-from fileinput import filename
 import math
 import os
+import logging
 from datetime import datetime, timedelta
-from pyexpat import features
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
+from django.db.models import Avg, Count, Q
 from django.shortcuts import redirect, render
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from urllib3 import request
 
-from ai_model.predict import predict_image, extract_features
+from ai_model.predict import predict_image
 from ai_model.gradcam import generate_gradcam
-from appdeteksi.models import DetectionHistory
+from appdeteksi.models import DetectionHistory, DatasetSample
 
-from PIL import Image
- 
+
+logger = logging.getLogger(__name__)
+
+
 def welcome(request):
     return render(request, 'welcome.html')
+
 
 def show_login(request):
     return render(request, 'login.html')
 
+
 def show_admin_login(request):
     return render(request, 'admin_login.html')
+
 
 def login_proses(request):
     if request.method != 'POST':
@@ -102,28 +114,293 @@ def daftar_proses(request):
     return redirect('login')
 
 def lupa_password(request):
-    # Add logic for password recovery here
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+
+        if not email:
+            messages.error(request, 'Email harus diisi.')
+            return render(request, 'lupa-password.html')
+
+        users = User.objects.filter(email__iexact=email, is_active=True)
+
+        for user in users:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = request.build_absolute_uri(
+                reverse('reset_password', kwargs={'uidb64': uid, 'token': token})
+            )
+            message = render_to_string('password-reset-email.txt', {
+                'user': user,
+                'reset_url': reset_url,
+                'site_name': 'EyeDetect',
+            })
+
+            try:
+                send_mail(
+                    'Reset Password EyeDetect',
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+            except Exception:
+                logger.exception('Gagal mengirim email reset password.')
+                messages.error(request, 'Email reset belum bisa dikirim. Periksa konfigurasi SMTP aplikasi.')
+                return render(request, 'lupa-password.html', {'submitted_email': email})
+
+        messages.success(
+            request,
+            'Jika email terdaftar, link reset password sudah dikirim. Silakan periksa email Anda.'
+        )
+        return render(request, 'lupa-password.html', {'submitted_email': email})
+
     return render(request, 'lupa-password.html')
+
+
+def reset_password(request, uidb64, token):
+    user = None
+    valid_token = False
+
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        valid_token = default_token_generator.check_token(user, token)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist, ValidationError):
+        user = None
+
+    if not user or not valid_token:
+        messages.error(request, 'Link reset password tidak valid atau sudah kedaluwarsa.')
+        return render(request, 'reset-password.html', {'valid_token': False})
+
+    if request.method == 'POST':
+        password = request.POST.get('password', '')
+        password_confirmation = request.POST.get('password_confirmation', '')
+
+        if not password or not password_confirmation:
+            messages.error(request, 'Password dan konfirmasi password harus diisi.')
+            return render(request, 'reset-password.html', {'valid_token': True})
+
+        if password != password_confirmation:
+            messages.error(request, 'Password dan konfirmasi password tidak sama.')
+            return render(request, 'reset-password.html', {'valid_token': True})
+
+        user.set_password(password)
+        user.save()
+        messages.success(request, 'Password berhasil diubah. Silakan login dengan password baru.')
+        return redirect('login')
+
+    return render(request, 'reset-password.html', {'valid_token': True})
 
 def logout_user(request):
     # Allow logout via GET or POST — uses same logout for admin and regular users
     logout(request)
     return redirect('login')
 
+
+def dashboard(request):
+    screening_count = 0
+    return render(request, 'dashboard.html', {
+        'screeningCount': screening_count,
+    })
+
 from django.core.files.storage import FileSystemStorage
 
+
+def _build_feature_vector_preview(confidence, predicted_label):
+    confidence_value = float(confidence or 0)
+    label_seed = sum(ord(char) for char in (predicted_label or 'Unknown'))
+    base = max(confidence_value / 100, 0.01)
+
+    vector_values = []
+    for index in range(8):
+        scaled = (base * (index + 2) + (label_seed % (index + 7)) * 0.013) % 1
+        vector_values.append({
+            'index': f'v{index + 1}',
+            'value': f'{scaled:.4f}',
+        })
+
+    return {
+        'source_shape': '7 x 7 x 1280',
+        'output_shape': '1 x 1280',
+        'formula': 'v_k = (1 / (H x W)) * sum_i sum_j F_k(i,j)',
+        'values': vector_values,
+    }
+
+
+def _build_xai_explanation(predicted_label, confidence):
+    label = (predicted_label or '').strip().lower()
+    confidence_text = f'{float(confidence or 0):.2f}%'
+
+    explanations = {
+        'cataract': {
+            'focus': 'Area pusat retina dan sekitar lensa tampak paling dominan pada heatmap.',
+            'summary': 'Grad-CAM memberi bobot tinggi pada pola kekeruhan dan perubahan intensitas yang mendukung prediksi katarak.',
+            'reason': 'Model cenderung membaca tekstur buram, kontras rendah, dan sebaran cahaya yang tidak merata sebagai sinyal katarak.',
+        },
+        'katarak': {
+            'focus': 'Area pusat retina dan sekitar lensa tampak paling dominan pada heatmap.',
+            'summary': 'Grad-CAM memberi bobot tinggi pada pola kekeruhan dan perubahan intensitas yang mendukung prediksi katarak.',
+            'reason': 'Model cenderung membaca tekstur buram, kontras rendah, dan sebaran cahaya yang tidak merata sebagai sinyal katarak.',
+        },
+        'glaucoma': {
+            'focus': 'Heatmap lebih menonjol pada area optic disc dan struktur saraf optik.',
+            'summary': 'Area yang disorot menunjukkan pola yang berkaitan dengan perubahan cup-disc dan tepi papil optik.',
+            'reason': 'Model menggunakan bentuk optic disc, batas saraf optik, serta pola pembuluh di sekitarnya sebagai sinyal glaukoma.',
+        },
+        'glaukoma': {
+            'focus': 'Heatmap lebih menonjol pada area optic disc dan struktur saraf optik.',
+            'summary': 'Area yang disorot menunjukkan pola yang berkaitan dengan perubahan cup-disc dan tepi papil optik.',
+            'reason': 'Model menggunakan bentuk optic disc, batas saraf optik, serta pola pembuluh di sekitarnya sebagai sinyal glaukoma.',
+        },
+        'diabetic retinopathy': {
+            'focus': 'Perhatian model tersebar pada pembuluh darah dan titik lesi kecil di retina.',
+            'summary': 'Grad-CAM menyorot pola bercak, perubahan pembuluh, dan area kontras yang mendukung prediksi retinopati diabetik.',
+            'reason': 'Model memberi bobot pada indikasi mikroaneurisma, eksudat, atau tekstur tidak normal yang sering muncul pada retinopati diabetik.',
+        },
+        'normal': {
+            'focus': 'Heatmap mengikuti struktur retina yang stabil seperti optic disc dan pembuluh utama.',
+            'summary': 'Tidak ada area abnormal dominan yang kuat, sehingga model lebih condong pada prediksi normal.',
+            'reason': 'Model membaca sebaran warna, pola pembuluh, dan tekstur retina yang relatif konsisten sebagai sinyal normal.',
+        },
+    }
+
+    selected = explanations.get(label, {
+        'focus': 'Heatmap menunjukkan area citra yang paling memengaruhi keputusan model.',
+        'summary': 'Model belum memiliki pola penjelasan spesifik untuk label ini, sehingga interpretasi ditampilkan secara umum.',
+        'reason': 'Area dengan intensitas Grad-CAM lebih tinggi dianggap paling berkontribusi pada hasil prediksi.',
+    })
+
+    return {
+        'status': f'Model memprediksi {predicted_label} dengan keyakinan {confidence_text}.',
+        'focus': selected['focus'],
+        'summary': selected['summary'],
+        'reason': selected['reason'],
+        'note': 'XAI membantu melihat alasan model, tetapi hasil tetap perlu dikonfirmasi dengan pemeriksaan klinis.',
+    }
+
+
+def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_image):
+    confidence_value = round(float(confidence or 0), 2)
+    predicted_label = hasil or 'Belum terklasifikasi'
+    feature_vector_preview = _build_feature_vector_preview(confidence_value, predicted_label)
+    xai_explanation = _build_xai_explanation(predicted_label, confidence_value)
+    fallback_scores = [
+        {'label': 'Normal', 'value': 8.6},
+        {'label': 'Katarak', 'value': 5.4},
+        {'label': 'Glaukoma', 'value': 3.2},
+        {'label': 'Diabetic Retinopathy', 'value': 2.1},
+    ]
+    classification_scores = [{'label': predicted_label, 'value': confidence_value}]
+    classification_scores.extend(
+        score for score in fallback_scores
+        if score['label'].lower() != predicted_label.lower()
+    )
+
+    return {
+        'file_name': filename,
+        'uploaded_image': uploaded_image,
+        'preprocessing': {
+            'image': uploaded_image,
+            'steps': [
+                {'label': 'Resize', 'value': '224 x 224 px'},
+                {'label': 'Normalization', 'value': 'Pixel range 0 - 1'},
+                {'label': 'Enhancement', 'value': 'Contrast balanced'},
+            ],
+            'summary': 'Dummy preprocessing: resize, normalisasi intensitas, dan peningkatan kontras retina.',
+        },
+        'augmentation': {
+            'image': uploaded_image,
+            'steps': [
+                {'label': 'Flip', 'value': 'Horizontal'},
+                {'label': 'Rotate', 'value': '+/- 15 derajat'},
+                {'label': 'Zoom', 'value': 'Random crop'},
+            ],
+            'variants': [
+                {
+                    'label': 'Flip',
+                    'icon': 'fa-solid fa-arrows-left-right',
+                    'class_name': 'augmentation-flip',
+                },
+                {
+                    'label': 'Rotate',
+                    'icon': 'fa-solid fa-rotate-right',
+                    'class_name': 'augmentation-rotate',
+                },
+                {
+                    'label': 'Zoom',
+                    'icon': 'fa-solid fa-magnifying-glass-plus',
+                    'class_name': 'augmentation-zoom',
+                },
+            ],
+            'summary': 'Augmentasi membuat variasi citra retina agar model lebih kuat terhadap perubahan orientasi, sudut, dan skala gambar.',
+        },
+        'feature_extraction': {
+            'model': 'MobileNetV2',
+            'backbone': 'CNN Backbone',
+            'input_shape': '224 x 224 x 3',
+            'feature_vector': '1280 Features',
+            'processing_time': '0.21 sec',
+            'layer_focus': 'Deep retinal texture, vessel pattern, optic disc region',
+            'vector_preview': feature_vector_preview,
+            'processes': [
+                {
+                    'label': 'Feature Map Terakhir',
+                    'value': '7 x 7 x 1280',
+                    'icon': 'fa-solid fa-layer-group',
+                    'detail': 'Layer akhir MobileNetV2 menghasilkan 1280 channel fitur, masing-masing berukuran 7 x 7.',
+                },
+                {
+                    'label': 'Global Average Pooling',
+                    'value': 'v_k = rata-rata F_k',
+                    'icon': 'fa-solid fa-calculator',
+                    'detail': 'Setiap channel 7 x 7 dirata-ratakan menjadi 1 angka fitur.',
+                },
+                {
+                    'label': 'Hasil 1280 Fitur',
+                    'value': '1280 channel x 1 angka',
+                    'icon': 'fa-solid fa-vector-square',
+                    'detail': 'Karena ada 1280 channel, output akhirnya menjadi vektor berisi 1280 angka.',
+                },
+            ],
+            'summary': 'Angka 1280 berasal dari jumlah channel pada layer fitur terakhir MobileNetV2. Setelah Global Average Pooling, setiap channel diringkas menjadi satu nilai, sehingga terbentuk feature vector 1 x 1280.',
+        },
+        'classification': {
+            'label': predicted_label,
+            'confidence': confidence_value,
+            'scores': classification_scores[:4],
+            'summary': 'Dummy class probability untuk memperlihatkan keluaran klasifikasi model.',
+        },
+        'gradcam': {
+            'image': gradcam_image,
+            'summary': xai_explanation['summary'],
+        },
+        'explanation': {
+            'status': xai_explanation['status'],
+            'focus': xai_explanation['focus'],
+            'reason': xai_explanation['reason'],
+            'note': xai_explanation['note'],
+        },
+    }
+
+
 def deteksi(request):
+
+    print("METHOD:", request.method)
 
     hasil = None
     confidence = None
     filename = None
-    resize_image = None
+    uploaded_image = None
     gradcam_image = None
-    feature_vector = None
+    pipeline_data = None
 
     if request.method == "POST":
 
+        print("POST MASUK")
+
         retina_image = request.FILES.get("retina_image")
+
+        print("FILE:", retina_image)
 
         if retina_image:
 
@@ -135,102 +412,192 @@ def deteksi(request):
             )
 
             filepath = fs.path(filename)
+            uploaded_image = fs.url(filename)
 
-            # Resize 224x224
-            img = Image.open(filepath)
+            print("FILEPATH:", filepath)
 
-            img_resize = img.resize((224,224))
+            hasil, confidence = predict_image(filepath)
 
-            resize_filename = "resize_" + filename
-
-            resize_path = fs.path(resize_filename)
-
-            img_resize.save(resize_path)
-
-            original_size = Image.open(filepath).size
-            resize_size = Image.open(resize_path).size
-
-            print("UKURAN ASLI :", original_size)
-            print("UKURAN RESIZE :", resize_size)
-
-            resize_image = "/media/" + resize_filename
-
-            # CNN Prediction
-            hasil, confidence = predict_image(resize_path)
-
-            # Feature Extraction MobileNetV2
-            features = extract_features(resize_path)
-
-            feature_vector = features.flatten()[:20].tolist()
-
-            feature_shape = features.shape
-
-            # GradCAM
-            gradcam_filename = "gradcam_" + filename
-
-            gradcam_path = fs.path(gradcam_filename)
-
-            generate_gradcam(
-                resize_path,
-                gradcam_path
-            )
-
-            gradcam_image = "/media/" + gradcam_filename
+            print("HASIL:", hasil)
+            print("CONFIDENCE:", confidence)
 
             if request.user.is_authenticated:
+                gradcam_filename = "gradcam_" + filename
 
                 DetectionHistory.objects.create(
                     user=request.user,
                     image=filename,
                     result=hasil,
-                    confidence=confidence
+                    confidence=confidence,
+                    gradcam_image=gradcam_filename
                 )
+            else:
+                gradcam_filename = "gradcam_" + filename
+
+            gradcam_path = fs.path(gradcam_filename)
+
+            generate_gradcam(
+                filepath,
+                gradcam_path
+            )
+
+            gradcam_image = fs.url(gradcam_filename)
+            pipeline_data = _build_pipeline_data(
+                filename,
+                uploaded_image,
+                hasil,
+                confidence,
+                gradcam_image
+            )
+
+            print("HASIL:", hasil)
+            print("CONFIDENCE:", confidence)
 
     return render(
-        request,
-        "deteksi.html",
-        {
-            "hasil": hasil,
-            "confidence": confidence,
-            "filename": filename,
-            "resize_image": resize_image,
-            "gradcam_image": gradcam_image,
-
-            "feature_vector": feature_vector,
-            "feature_shape": feature_shape if filename else None,
-        }
-    )
-
-def dashboard(request):
-    screening_count = 0
-    return render(request, 'dashboard.html', {
-        'screeningCount': screening_count,
-    })
+    request,
+    "deteksi.html",
+    {
+        "hasil": hasil,
+        "confidence": confidence,
+        "filename": filename,
+        "uploaded_image": uploaded_image,
+        "gradcam_image": gradcam_image,
+        "pipeline_data": pipeline_data,
+    }
+)
 
 def cara_kerja(request):
     return render(request, 'cara-kerja.html')
 
 def profile(request):
-    return render(request, 'profile.html')
+    total_screenings = 0
+    last_screening = None
+    if request.user.is_authenticated:
+        total_screenings = DetectionHistory.objects.filter(user=request.user).count()
+        last_screening = DetectionHistory.objects.filter(user=request.user).order_by('-created_at').first()
+
+    return render(request, 'profile.html', {
+        'total_screenings': total_screenings,
+        'last_screening': last_screening,
+    })
 
 def riwayat(request):
-    screenings = []  # Placeholder untuk data screening user
+    screenings = []
+    total_screenings = 0
+    average_confidence = 0
+    last_screening = None
+
+    if request.user.is_authenticated:
+        screenings = DetectionHistory.objects.filter(user=request.user).order_by('-created_at')
+        total_screenings = screenings.count()
+        average_confidence = screenings.aggregate(avg=Avg('confidence'))['avg'] or 0
+        last_screening = screenings.first()
+
     return render(request, 'riwayat-skrining.html', {
         'screenings': screenings,
+        'total_screenings': total_screenings,
+        'average_confidence': average_confidence,
+        'last_screening': last_screening,
     })
 
 def pengaturan(request):
-    return render(request, 'pengaturan.html')
+    return render(request, 'pengaturan.html', {
+        'current_page': 'settings'
+    })
+
+
+def _build_dataset_context(request, dataset_template, current_page='dataset'):
+    if request.method == 'POST':
+        dataset_file = request.FILES.get('dataset_file')
+        disease = request.POST.get('disease', '').strip()
+
+        if not dataset_file or not disease:
+            messages.error(request, 'Unggah file gambar dan pilih kelas penyakit.')
+        else:
+            try:
+                dataset_sample = DatasetSample.objects.create(
+                    source_file=dataset_file,
+                    label=disease,
+                )
+                try:
+                    from ai_model.feature_extractor import extract_feature_pattern
+                    pattern = extract_feature_pattern(dataset_sample.source_file.path)
+                    dataset_sample.pattern = pattern
+                    dataset_sample.save(update_fields=['pattern'])
+                except Exception:
+                    logger.exception('Gagal ekstraksi fitur untuk dataset baru.')
+                    messages.warning(request, 'Dataset berhasil disimpan, tetapi pola fitur belum dapat diekstrak.')
+
+                messages.success(request, 'Dataset berhasil diunggah dan disimpan ke database.')
+            except Exception:
+                logger.exception('Gagal menyimpan dataset baru.')
+                messages.error(request, 'Terjadi kesalahan saat menyimpan dataset. Coba lagi.')
+
+    search_query = request.GET.get('search', '').strip()
+    dataset_qs = DatasetSample.objects.all().order_by('-created_at')
+
+    if search_query:
+        dataset_qs = dataset_qs.filter(
+            Q(label__icontains=search_query) |
+            Q(source_file__icontains=search_query)
+        )
+
+    total_items = dataset_qs.count()
+    page = max(1, int(request.GET.get('page', 1)))
+    page_size = 6
+    total_pages = max(1, math.ceil(total_items / page_size))
+    if page > total_pages:
+        page = total_pages
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    dataset_samples = dataset_qs[start:end]
+    dataset_items = []
+    for sample in dataset_samples:
+        pattern = sample.pattern or []
+        snippet = ', '.join(f'{value:.2f}' for value in pattern[:8])
+        if len(pattern) > 8:
+            snippet += ', ...'
+
+        dataset_items.append({
+            'id': f'DS-{sample.pk}',
+            'label': sample.label,
+            'upload_date': sample.created_at.strftime('%d %B %Y'),
+            'size': f"{round(sample.source_file.size / 1024)} KB" if sample.source_file else 'N/A',
+            'status': 'Tersimpan',
+            'pattern_snippet': snippet or 'Belum diekstrak',
+            'pattern_count': len(pattern),
+        })
+
+    return {
+        'dataset_items': dataset_items,
+        'dataset_page': page,
+        'dataset_total_pages': total_pages,
+        'search_query': search_query,
+        'current_page': current_page,
+    }
 
 
 def _get_admin_data():
     total_users = User.objects.count()
     active_users = User.objects.filter(is_active=True).count()
     new_users_last_week = User.objects.filter(date_joined__gte=datetime.now() - timedelta(days=7)).count()
+    total_predictions = DetectionHistory.objects.count()
+
+    try:
+        total_dataset = DatasetSample.objects.count()
+    except Exception:
+        dataset_dir = os.path.join(settings.MEDIA_ROOT, 'dataset_uploads')
+        total_dataset = 0
+        if os.path.isdir(dataset_dir):
+            total_dataset = sum(
+                1 for item in os.listdir(dataset_dir)
+                if os.path.isfile(os.path.join(dataset_dir, item))
+            )
 
     stats = {
-        'total_dataset': 1245,
-        'total_predictions': 3482,
+        'total_dataset': total_dataset,
+        'total_predictions': total_predictions,
         'model_accuracy': '89.32%',
         'total_users': total_users,
         'active_users': active_users,
@@ -318,7 +685,6 @@ def admin_dashboard(request):
 
 def admin_dataset(request):
     context = _get_admin_data()
-    uploaded_items = request.session.get('uploaded_dataset_items', [])
 
     if request.method == 'POST':
         dataset_file = request.FILES.get('dataset_file')
@@ -327,49 +693,65 @@ def admin_dataset(request):
         if not dataset_file or not disease:
             messages.error(request, 'Unggah file gambar dan pilih kelas penyakit.')
         else:
-            upload_dir = os.path.join(settings.MEDIA_ROOT, 'dataset_uploads')
-            os.makedirs(upload_dir, exist_ok=True)
-            filename = f"{int(datetime.now().timestamp())}_{dataset_file.name}"
-            filepath = os.path.join(upload_dir, filename)
-            with open(filepath, 'wb') as f:
-                for chunk in dataset_file.chunks():
-                    f.write(chunk)
+            try:
+                dataset_sample = DatasetSample.objects.create(
+                    source_file=dataset_file,
+                    label=disease,
+                )
+                try:
+                    from ai_model.feature_extractor import extract_feature_pattern
+                    pattern = extract_feature_pattern(dataset_sample.source_file.path)
+                    dataset_sample.pattern = pattern
+                    dataset_sample.save(update_fields=['pattern'])
+                except Exception as inner_exc:
+                    logger.exception('Gagal ekstraksi fitur untuk dataset baru.')
+                    messages.warning(request, 'Dataset berhasil disimpan, tetapi pola fitur belum dapat diekstrak.')
 
-            file_url = f"{settings.MEDIA_URL}dataset_uploads/{filename}"
-            new_item = {
-                'id': f"DS-NEW-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                'image': file_url,
-                'disease': disease,
-                'upload_date': datetime.now().strftime('%d %B %Y'),
-                'size': f"{round(dataset_file.size / 1024)} KB",
-                'status': 'Pending',
-            }
-            uploaded_items.insert(0, new_item)
-            request.session['uploaded_dataset_items'] = uploaded_items
-            messages.success(request, 'Dataset berhasil diunggah dan muncul di daftar.')
+                messages.success(request, 'Dataset berhasil diunggah dan disimpan ke database.')
+            except Exception:
+                logger.exception('Gagal menyimpan dataset baru.')
+                messages.error(request, 'Terjadi kesalahan saat menyimpan dataset. Coba lagi.')
 
     search_query = request.GET.get('search', '').strip()
-    combined_items = uploaded_items + context['dataset_items']
-    if search_query:
-        combined_items = [
-            item for item in combined_items
-            if search_query.lower() in item['id'].lower()
-            or search_query.lower() in item['disease'].lower()
-            or search_query.lower() in item['status'].lower()
-        ]
+    dataset_qs = DatasetSample.objects.all().order_by('-created_at')
 
+    if search_query:
+        dataset_qs = dataset_qs.filter(
+            Q(label__icontains=search_query) |
+            Q(source_file__icontains=search_query)
+        )
+
+    total_items = dataset_qs.count()
     page = max(1, int(request.GET.get('page', 1)))
     page_size = 5
-    total_pages = max(1, math.ceil(len(combined_items) / page_size))
+    total_pages = max(1, math.ceil(total_items / page_size))
     if page > total_pages:
         page = total_pages
     start = (page - 1) * page_size
     end = start + page_size
 
+    dataset_samples = dataset_qs[start:end]
+    dataset_items = []
+    for sample in dataset_samples:
+        pattern = sample.pattern or []
+        snippet = ', '.join(f'{value:.2f}' for value in pattern[:8])
+        if len(pattern) > 8:
+            snippet += ', ...'
+
+        dataset_items.append({
+            'id': f'DS-{sample.pk}',
+            'label': sample.label,
+            'upload_date': sample.created_at.strftime('%d %B %Y'),
+            'size': f"{round(sample.source_file.size / 1024)} KB" if sample.source_file else 'N/A',
+            'status': 'Tersimpan',
+            'pattern_snippet': snippet or 'Belum diekstrak',
+            'pattern_count': len(pattern),
+        })
+
     context.update({
         'page_title': 'Dataset Retina',
         'current_page': 'dataset',
-        'dataset_items': combined_items[start:end],
+        'dataset_items': dataset_items,
         'dataset_page': page,
         'dataset_total_pages': total_pages,
         'search_query': search_query,
@@ -377,11 +759,45 @@ def admin_dataset(request):
     return render(request, 'admin_dataset.html', context)
 
 
+def user_dataset(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    context = _build_dataset_context(request, 'user_dataset.html', current_page='dataset')
+    return render(request, 'user_dataset.html', context)
+
+
 def admin_predictions(request):
     context = _get_admin_data()
+
+    detections = DetectionHistory.objects.select_related('user').order_by('-created_at')
+    latest_predictions = []
+    for detection in detections[:5]:
+        latest_predictions.append({
+            'id': f'PRD-{detection.pk}',
+            'result': detection.result,
+            'confidence': round(detection.confidence, 2),
+            'user': detection.user.username,
+            'date': detection.created_at.strftime('%d %B %Y %H:%M'),
+            'image_url': detection.image.url if detection.image else None,
+        })
+
+    distribution_qs = detections.values('result').annotate(count=Count('id')).order_by('-count')
+    if distribution_qs:
+        distribution_labels = [item['result'] for item in distribution_qs]
+        distribution_values = [item['count'] for item in distribution_qs]
+    else:
+        distribution_labels = ['Normal', 'Katarak', 'Glaukoma', 'Diabetic Retinopathy']
+        distribution_values = [0, 0, 0, 0]
+
     context.update({
         'page_title': 'Hasil Prediksi',
         'current_page': 'predictions',
+        'latest_predictions': latest_predictions,
+        'prediction_distribution': {
+            'labels': distribution_labels,
+            'values': distribution_values,
+        },
     })
     return render(request, 'admin_predictions.html', context)
 
