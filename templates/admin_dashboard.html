@@ -118,15 +118,15 @@
         labels: {{ prediction_distribution.labels|safe }},
         datasets: [{
           data: {{ prediction_distribution.values|safe }},
-          backgroundColor: ['#2563EB', '#06B6D4', '#38bdf8', '#0F172A'],
+          backgroundColor: ['#4f8cff', '#8b5cf6', '#22d3ee', '#2dd4a8'],
           borderWidth: 0,
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: {position:'bottom', labels:{color:'#475569', boxWidth:14, padding:16}},
-          tooltip: {backgroundColor:'#0F172A', titleColor:'#fff', bodyColor:'#fff'}
+          legend: {position:'bottom', labels:{color:'#b8c7e6', boxWidth:14, padding:16}},
+          tooltip: {backgroundColor:'#071330', titleColor:'#fff', bodyColor:'#dbeafe'}
         }
       }
     });

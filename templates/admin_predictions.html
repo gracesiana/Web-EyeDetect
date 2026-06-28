@@ -102,13 +102,16 @@
         labels: {{ prediction_distribution.labels|safe }},
         datasets: [{
           data: {{ prediction_distribution.values|safe }},
-          backgroundColor: ['#22c55e', '#38bdf8', '#818cf8', '#f97316'],
+          backgroundColor: ['#4f8cff', '#8b5cf6', '#22d3ee', '#2dd4a8'],
           borderWidth: 0,
         }]
       },
       options: {
         responsive: true,
-        plugins: {legend:{position:'bottom', labels:{color:'#64748b'}}}
+        plugins: {
+          legend: {position:'bottom', labels:{color:'#b8c7e6'}},
+          tooltip: {backgroundColor:'#071330', titleColor:'#fff', bodyColor:'#dbeafe'}
+        }
       }
     });
   }
