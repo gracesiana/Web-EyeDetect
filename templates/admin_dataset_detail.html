@@ -1,0 +1,122 @@
+{% extends 'admin_base.html' %}
+
+{% block body_class %}dataset-admin-page{% endblock %}
+
+{% block page_actions %}
+  <a class="dataset-back-button" href="{% url 'admin_panel_dataset' %}?split={{ split }}">&larr; Kembali ke Dataset</a>
+{% endblock %}
+
+{% block content %}
+<section class="dataset-retina-page dataset-detail-page" aria-labelledby="detail-heading">
+  <nav class="dataset-breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'admin_panel_dataset' %}?split={{ split }}">Dataset Retina</a><span>/</span><span>{{ split_label }}</span><span>/</span><strong>{{ class_meta.name }}</strong>
+  </nav>
+
+  <header class="dataset-detail-hero class-{{ class_meta.theme }}">
+    <div class="dataset-detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12s3.3-6 9-6 9 6 9 6-3.3 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+    <div class="dataset-detail-copy">
+      <span class="dataset-eyebrow">{{ split_label }} Dataset</span>
+      <h3 id="detail-heading">{{ class_meta.name }}</h3>
+      <p>{{ class_meta.description }}</p>
+    </div>
+    <div class="dataset-detail-stat"><strong>{{ image_total }}</strong><span>Total gambar</span></div>
+  </header>
+
+  <article class="dataset-panel dataset-gallery-panel">
+    <div class="dataset-gallery-toolbar">
+      <div><span class="dataset-eyebrow">Image Explorer</span><h4>Galeri {{ class_meta.name }}</h4><p>Menampilkan {{ filtered_total }} gambar{% if search_query %} untuk "{{ search_query }}"{% endif %}.</p></div>
+      <div class="dataset-gallery-controls">
+        <form class="dataset-search" method="get" id="imageSearchForm">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input id="imageSearchInput" type="search" name="q" value="{{ search_query }}" placeholder="Cari nama file..." autocomplete="off">
+        </form>
+        <select id="detailSplitFilter" class="dataset-filter-select" aria-label="Pindah pembagian dataset">
+          <option value="{% url 'admin_panel_dataset_detail' 'train' class_meta.slug %}" {% if split == 'train' %}selected{% endif %}>Train</option>
+          <option value="{% url 'admin_panel_dataset_detail' 'test' class_meta.slug %}" {% if split == 'test' %}selected{% endif %}>Test</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="dataset-image-grid" id="datasetImageGrid">
+      {% for image in images %}
+      <button type="button" class="dataset-image-card" data-preview-url="{{ image.url }}" data-preview-name="{{ image.name }}" aria-label="Preview {{ image.name }}">
+        <span class="dataset-image-frame"><img src="{{ image.url }}" alt="{{ class_meta.name }} - {{ image.name }}" loading="lazy"><span class="dataset-preview-overlay"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12s3.3-6 9-6 9 6 9 6-3.3 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="3"/></svg>Preview</span></span>
+        <span class="dataset-image-info"><span title="{{ image.name }}">{{ image.name }}</span><small>#{{ image.number }}</small></span>
+      </button>
+      {% empty %}
+      <div class="dataset-empty-state"><strong>Gambar tidak ditemukan</strong><span>Periksa kata kunci atau isi folder dataset.</span></div>
+      {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="dataset-pagination" aria-label="Pagination galeri">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" aria-label="Halaman sebelumnya">&larr;</a>{% else %}<span class="is-disabled">&larr;</span>{% endif %}
+      {% for page_number in page_range %}
+        {% if page_number %}
+          {% if page_number == page_obj.number %}<span class="is-current">{{ page_number }}</span>{% else %}<a href="?page={{ page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">{{ page_number }}</a>{% endif %}
+        {% else %}<span class="pagination-gap">...</span>{% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" aria-label="Halaman berikutnya">&rarr;</a>{% else %}<span class="is-disabled">&rarr;</span>{% endif %}
+    </nav>
+    {% endif %}
+  </article>
+</section>
+
+<div class="dataset-modal" id="datasetPreviewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle" hidden>
+  <button type="button" class="dataset-modal-backdrop" data-modal-close aria-label="Tutup preview"></button>
+  <div class="dataset-modal-dialog">
+    <div class="dataset-modal-header"><div><span>Preview Retina</span><strong id="previewTitle"></strong></div><button type="button" data-modal-close aria-label="Tutup">&times;</button></div>
+    <div class="dataset-modal-body"><button type="button" id="previewPrevious" class="dataset-modal-nav" aria-label="Gambar sebelumnya">&lsaquo;</button><img id="previewImage" src="" alt="Preview gambar retina"><button type="button" id="previewNext" class="dataset-modal-nav" aria-label="Gambar berikutnya">&rsaquo;</button></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+  const splitFilter = document.getElementById('detailSplitFilter');
+  splitFilter?.addEventListener('change', (event) => window.location.assign(event.target.value));
+
+  const searchForm = document.getElementById('imageSearchForm');
+  const searchInput = document.getElementById('imageSearchInput');
+  let searchTimer;
+  searchInput?.addEventListener('input', () => {
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(() => searchForm.requestSubmit(), 500);
+  });
+
+  const modal = document.getElementById('datasetPreviewModal');
+  const previewImage = document.getElementById('previewImage');
+  const previewTitle = document.getElementById('previewTitle');
+  const previewButtons = Array.from(document.querySelectorAll('[data-preview-url]'));
+  let activeIndex = 0;
+
+  const showPreview = (index) => {
+    if (!previewButtons.length) return;
+    activeIndex = (index + previewButtons.length) % previewButtons.length;
+    const button = previewButtons[activeIndex];
+    previewImage.src = button.dataset.previewUrl;
+    previewImage.alt = `Preview ${button.dataset.previewName}`;
+    previewTitle.textContent = button.dataset.previewName;
+    modal.hidden = false;
+    document.body.classList.add('modal-open');
+  };
+  const closePreview = () => {
+    modal.hidden = true;
+    previewImage.src = '';
+    document.body.classList.remove('modal-open');
+  };
+
+  previewButtons.forEach((button, index) => button.addEventListener('click', () => showPreview(index)));
+  document.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', closePreview));
+  document.getElementById('previewPrevious')?.addEventListener('click', () => showPreview(activeIndex - 1));
+  document.getElementById('previewNext')?.addEventListener('click', () => showPreview(activeIndex + 1));
+  document.addEventListener('keydown', (event) => {
+    if (modal?.hidden) return;
+    if (event.key === 'Escape') closePreview();
+    if (event.key === 'ArrowLeft') showPreview(activeIndex - 1);
+    if (event.key === 'ArrowRight') showPreview(activeIndex + 1);
+  });
+})();
+</script>
+{% endblock %}

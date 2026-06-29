@@ -1,7 +1,9 @@
 import math
+import mimetypes
 import os
 import logging
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
@@ -9,7 +11,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Q
+from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -26,6 +30,104 @@ from appdeteksi.models import DetectionHistory, DatasetSample
 
 
 logger = logging.getLogger(__name__)
+
+
+DATASET_SPLITS = ('train', 'test')
+DATASET_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
+DATASET_CLASSES = (
+    {
+        'slug': 'diabetic_retinopathy',
+        'name': 'Diabetic Retinopathy',
+        'description': 'Citra retina dengan indikasi kerusakan pembuluh darah akibat diabetes.',
+        'theme': 'retinopathy',
+    },
+    {
+        'slug': 'cataract',
+        'name': 'Cataract',
+        'description': 'Citra mata dengan karakteristik kekeruhan pada lensa.',
+        'theme': 'cataract',
+    },
+    {
+        'slug': 'glaucoma',
+        'name': 'Glaucoma',
+        'description': 'Citra retina dengan karakteristik kerusakan saraf optik.',
+        'theme': 'glaucoma',
+    },
+    {
+        'slug': 'normal',
+        'name': 'Normal',
+        'description': 'Citra retina sehat tanpa indikasi penyakit yang terdeteksi.',
+        'theme': 'normal',
+    },
+)
+DATASET_CLASS_MAP = {item['slug']: item for item in DATASET_CLASSES}
+
+
+def _dataset_root():
+    configured_root = getattr(
+        settings,
+        'DATASET_ROOT',
+        Path(settings.BASE_DIR) / 'EyeDetect' / 'dataset',
+    )
+    return Path(configured_root)
+
+
+def _dataset_directory(split, class_slug):
+    if split not in DATASET_SPLITS or class_slug not in DATASET_CLASS_MAP:
+        raise Http404('Folder dataset tidak ditemukan.')
+    return _dataset_root() / split / class_slug
+
+
+def _list_dataset_images(split, class_slug):
+    directory = _dataset_directory(split, class_slug)
+    if not directory.is_dir():
+        return []
+
+    try:
+        filenames = os.listdir(directory)
+    except OSError:
+        logger.exception('Gagal membaca folder dataset %s.', directory)
+        return []
+
+    return sorted(
+        filename
+        for filename in filenames
+        if (directory / filename).is_file()
+        and Path(filename).suffix.lower() in DATASET_IMAGE_EXTENSIONS
+    )
+
+
+def _dataset_image_url(split, class_slug, filename):
+    return reverse(
+        'admin_panel_dataset_image',
+        kwargs={
+            'split': split,
+            'class_slug': class_slug,
+            'filename': filename,
+        },
+    )
+
+
+def _scan_dataset():
+    scan = {}
+    for split in DATASET_SPLITS:
+        classes = []
+        for class_meta in DATASET_CLASSES:
+            filenames = _list_dataset_images(split, class_meta['slug'])
+            classes.append({
+                **class_meta,
+                'count': len(filenames),
+                'thumbnail_url': (
+                    _dataset_image_url(split, class_meta['slug'], filenames[0])
+                    if filenames else None
+                ),
+            })
+
+        total = sum(item['count'] for item in classes)
+        for item in classes:
+            item['percentage'] = round((item['count'] / total * 100), 1) if total else 0
+        scan[split] = {'classes': classes, 'total': total}
+    return scan
 
 
 def welcome(request):
@@ -288,15 +390,33 @@ def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_im
     xai_explanation = _build_xai_explanation(predicted_label, confidence_value)
     fallback_scores = [
         {'label': 'Normal', 'value': 8.6},
-        {'label': 'Katarak', 'value': 5.4},
-        {'label': 'Glaukoma', 'value': 3.2},
+        {'label': 'Cataract', 'value': 5.4},
+        {'label': 'Glaucoma', 'value': 3.2},
         {'label': 'Diabetic Retinopathy', 'value': 2.1},
     ]
+
+    # Map English and Indonesian disease names to a canonical form to avoid duplicates.
+    label_canonical_map = {
+        'cataract': 'cataract',
+        'katarak': 'cataract',
+        'glaucoma': 'glaucoma',
+        'glaukoma': 'glaucoma',
+        'diabetic retinopathy': 'diabetic retinopathy',
+        'normal': 'normal',
+    }
+
+    def _get_canonical(s):
+        return label_canonical_map.get((s or '').lower().strip(), (s or '').lower().strip())
+
     classification_scores = [{'label': predicted_label, 'value': confidence_value}]
-    classification_scores.extend(
-        score for score in fallback_scores
-        if score['label'].lower() != predicted_label.lower()
-    )
+    seen = {_get_canonical(predicted_label)}
+
+    for score in fallback_scores:
+        canonical = _get_canonical(score.get('label'))
+        if canonical in seen:
+            continue
+        seen.add(canonical)
+        classification_scores.append(score)
 
     return {
         'file_name': filename,
@@ -686,79 +806,115 @@ def admin_dashboard(request):
 
 
 def admin_dataset(request):
-    context = _get_admin_data()
+    active_split = request.GET.get('split', 'train').lower()
+    if active_split not in DATASET_SPLITS:
+        active_split = 'train'
 
-    if request.method == 'POST':
-        dataset_file = request.FILES.get('dataset_file')
-        disease = request.POST.get('disease', '').strip()
-
-        if not dataset_file or not disease:
-            messages.error(request, 'Unggah file gambar dan pilih kelas penyakit.')
-        else:
-            try:
-                dataset_sample = DatasetSample.objects.create(
-                    source_file=dataset_file,
-                    label=disease,
-                )
-                try:
-                    from ai_model.feature_extractor import extract_feature_pattern
-                    pattern = extract_feature_pattern(dataset_sample.source_file.path)
-                    dataset_sample.pattern = pattern
-                    dataset_sample.save(update_fields=['pattern'])
-                except Exception as inner_exc:
-                    logger.exception('Gagal ekstraksi fitur untuk dataset baru.')
-                    messages.warning(request, 'Dataset berhasil disimpan, tetapi pola fitur belum dapat diekstrak.')
-
-                messages.success(request, 'Dataset berhasil diunggah dan disimpan ke database.')
-            except Exception:
-                logger.exception('Gagal menyimpan dataset baru.')
-                messages.error(request, 'Terjadi kesalahan saat menyimpan dataset. Coba lagi.')
-
-    search_query = request.GET.get('search', '').strip()
-    dataset_qs = DatasetSample.objects.all().order_by('-created_at')
-
+    search_query = request.GET.get('q', '').strip()
+    dataset = _scan_dataset()
+    visible_classes = dataset[active_split]['classes']
     if search_query:
-        dataset_qs = dataset_qs.filter(
-            Q(label__icontains=search_query) |
-            Q(source_file__icontains=search_query)
+        normalized_query = search_query.casefold()
+        visible_classes = [
+            item for item in visible_classes
+            if normalized_query in item['name'].casefold()
+            or normalized_query in item['slug'].casefold()
+        ]
+
+    combined_distribution = []
+    grand_total = dataset['train']['total'] + dataset['test']['total']
+    for index, class_meta in enumerate(DATASET_CLASSES):
+        class_total = (
+            dataset['train']['classes'][index]['count']
+            + dataset['test']['classes'][index]['count']
         )
-
-    total_items = dataset_qs.count()
-    page = max(1, int(request.GET.get('page', 1)))
-    page_size = 5
-    total_pages = max(1, math.ceil(total_items / page_size))
-    if page > total_pages:
-        page = total_pages
-    start = (page - 1) * page_size
-    end = start + page_size
-
-    dataset_samples = dataset_qs[start:end]
-    dataset_items = []
-    for sample in dataset_samples:
-        pattern = sample.pattern or []
-        snippet = ', '.join(f'{value:.2f}' for value in pattern[:8])
-        if len(pattern) > 8:
-            snippet += ', ...'
-
-        dataset_items.append({
-            'id': f'DS-{sample.pk}',
-            'label': sample.label,
-            'upload_date': sample.created_at.strftime('%d %B %Y'),
-            'size': f"{round(sample.source_file.size / 1024)} KB" if sample.source_file else 'N/A',
-            'status': 'Tersimpan',
-            'pattern_snippet': snippet or 'Belum diekstrak',
-            'pattern_count': len(pattern),
+        combined_distribution.append({
+            'name': class_meta['name'],
+            'theme': class_meta['theme'],
+            'count': class_total,
+            'percentage': round(class_total / grand_total * 100, 1) if grand_total else 0,
         })
 
-    context.update({
+    context = {
         'page_title': 'Dataset Retina',
         'current_page': 'dataset',
-        'dataset_items': dataset_items,
-        'dataset_page': page,
-        'dataset_total_pages': total_pages,
+        'active_split': active_split,
+        'active_split_label': active_split.title(),
+        'classes': visible_classes,
+        'class_count': len(DATASET_CLASSES),
+        'train_total': dataset['train']['total'],
+        'test_total': dataset['test']['total'],
+        'grand_total': grand_total,
+        'combined_distribution': combined_distribution,
+        'chart_data': {
+            'labels': [item['name'] for item in dataset[active_split]['classes']],
+            'values': [item['count'] for item in dataset[active_split]['classes']],
+        },
         'search_query': search_query,
-    })
+        'scanned_at': datetime.now().strftime('%d %b %Y, %H:%M'),
+    }
     return render(request, 'admin_dataset.html', context)
+
+
+def admin_dataset_detail(request, split, class_slug):
+    if split not in DATASET_SPLITS or class_slug not in DATASET_CLASS_MAP:
+        raise Http404('Kelas dataset tidak ditemukan.')
+
+    class_meta = DATASET_CLASS_MAP[class_slug]
+    search_query = request.GET.get('q', '').strip()
+    filenames = _list_dataset_images(split, class_slug)
+    total_unfiltered = len(filenames)
+    if search_query:
+        normalized_query = search_query.casefold()
+        filenames = [name for name in filenames if normalized_query in name.casefold()]
+
+    paginator = Paginator(filenames, 24)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
+    start_index = page_obj.start_index() if paginator.count else 0
+    images = [
+        {
+            'name': filename,
+            'url': _dataset_image_url(split, class_slug, filename),
+            'number': start_index + index,
+        }
+        for index, filename in enumerate(page_obj.object_list)
+    ]
+
+    context = {
+        'page_title': f"{class_meta['name']} - {split.title()}",
+        'current_page': 'dataset',
+        'split': split,
+        'split_label': split.title(),
+        'other_split': 'test' if split == 'train' else 'train',
+        'class_meta': class_meta,
+        'images': images,
+        'image_total': total_unfiltered,
+        'filtered_total': paginator.count,
+        'search_query': search_query,
+        'page_obj': page_obj,
+        'page_range': [
+            item if isinstance(item, int) else None
+            for item in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)
+        ],
+    }
+    return render(request, 'admin_dataset_detail.html', context)
+
+
+def admin_dataset_image(request, split, class_slug, filename):
+    directory = _dataset_directory(split, class_slug).resolve()
+    candidate = (directory / filename).resolve()
+
+    if (
+        candidate.parent != directory
+        or candidate.suffix.lower() not in DATASET_IMAGE_EXTENSIONS
+        or not candidate.is_file()
+    ):
+        raise Http404('Gambar dataset tidak ditemukan.')
+
+    content_type = mimetypes.guess_type(candidate.name)[0] or 'application/octet-stream'
+    response = FileResponse(candidate.open('rb'), content_type=content_type)
+    response['Cache-Control'] = 'private, max-age=3600'
+    return response
 
 
 def user_dataset(request):

@@ -123,3 +123,6 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'
+
+# Dataset is read directly from disk and is intentionally not database-backed.
+DATASET_ROOT = BASE_DIR / 'EyeDetect' / 'dataset'

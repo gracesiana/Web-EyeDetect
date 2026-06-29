@@ -27,6 +27,16 @@ urlpatterns = [
     # ADMIN PANEL (custom admin dashboard)
     path('admin-panel/', views.admin_dashboard, name='admin_panel'),
     path('admin-panel/dataset/', views.admin_dataset, name='admin_panel_dataset'),
+    path(
+        'admin-panel/dataset/<str:split>/<str:class_slug>/',
+        views.admin_dataset_detail,
+        name='admin_panel_dataset_detail',
+    ),
+    path(
+        'admin-panel/dataset-image/<str:split>/<str:class_slug>/<path:filename>/',
+        views.admin_dataset_image,
+        name='admin_panel_dataset_image',
+    ),
     path('admin-panel/prediksi/', views.admin_predictions, name='admin_panel_predictions'),
     path('admin-panel/model-cnn/', views.admin_model_cnn, name='admin_panel_model'),
     path('admin-panel/aktivitas/', views.admin_activity, name='admin_panel_activity'),
