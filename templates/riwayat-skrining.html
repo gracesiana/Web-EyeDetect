@@ -22,6 +22,11 @@
             min-height: 100vh;
             display: flex;
         }
+            .logo img {
+                max-height: 60px;
+                width: auto;
+                display: block;
+            }
 
         .sidebar {
             width: 280px;
@@ -185,22 +190,81 @@
 
         .history-card {
             background: white;
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 20px;
+            padding: 22px;
             margin-bottom: 20px;
-            border-left: 4px solid #1473e6;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e8eff8;
+            box-shadow: 0 14px 30px rgba(20, 46, 89, 0.08);
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 24px;
+            align-items: center;
         }
 
         .history-card h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #102a57;
         }
 
         .history-card p {
             font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
+            color: #546178;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .history-card .history-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .history-card .history-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #f4f8ff;
+            color: #2d4fb0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .history-image-group {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        .history-image {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: flex-start;
+            align-items: center;
+            background: #f3f7ff;
+            border-radius: 18px;
+            padding: 14px;
+            height: 100%;
+        }
+
+        .history-image img {
+            width: 100%;
+            max-height: 150px;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
+        .history-image label {
+            font-size: 12px;
+            color: #42506d;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
         .history-status {
@@ -308,11 +372,7 @@
     <aside class="sidebar">
         <div>
             <div class="logo">
-<<<<<<< HEAD
-                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo" style="max-height: 72px; width: auto; display: block;">
-=======
-                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo" style="max-height: 48px; width: auto; display: block;">
->>>>>>> 5d7d44d197c1a2e068c5c21a682c2c90b60e6aa3
+                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo">
             </div>
 
             <nav class="menu">
@@ -385,11 +445,33 @@
                 <div class="history-list">
                     {% for screening in screenings %}
                         <div class="history-card">
-                            <h3>Skrining Mata #{{ screening.id }}</h3>
-                            <p><strong>Tanggal:</strong> {{ screening.created_at|date:"d/m/Y H:i" }}</p>
-                            <p><strong>Jenis Pemeriksaan:</strong> Analisis Retina</p>
-                            <p><strong>Hasil:</strong> Normal</p>
-                            <span class="history-status normal">Normal</span>
+                            <div>
+                                <h3>Skrining #{{ screening.id }}</h3>
+                                <p><strong>Tanggal:</strong> {{ screening.created_at|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Jenis Pemeriksaan:</strong> Analisis Retina</p>
+                                <p><strong>Hasil:</strong> {{ screening.result }}</p>
+                                <div class="history-meta">
+                                    <span><i class="fa-regular fa-percent"></i> {{ screening.confidence|floatformat:2 }}%</span>
+                                    <span><i class="fa-regular fa-clock"></i> {{ screening.created_at|timesince }} lalu</span>
+                                </div>
+                                <span class="history-status {% if screening.result|lower == 'normal' %}normal{% elif screening.result|lower == 'glaucoma' or screening.result|lower == 'diabetic retinopathy' or screening.result|lower == 'diabetes' %}warning{% else %}danger{% endif %}">
+                                    {{ screening.result }}
+                                </span>
+                            </div>
+                            <div class="history-image-group">
+                                {% if screening.image %}
+                                    <div class="history-image">
+                                        <label>Input</label>
+                                        <img src="{{ screening.image.url }}" alt="Input retina {{ screening.result }}" />
+                                    </div>
+                                {% endif %}
+                                {% if screening.gradcam_image %}
+                                    <div class="history-image">
+                                        <label>Heatmap</label>
+                                        <img src="{{ screening.gradcam_image.url }}" alt="Grad-CAM {{ screening.result }}" />
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                     {% endfor %}
                 </div>

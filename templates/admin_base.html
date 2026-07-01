@@ -45,8 +45,8 @@
           </a>
         </div>
       </aside>
-      <main class="admin-main ml-0 min-h-screen flex-1 w-full bg-[#071330] px-4 pb-8 pt-5 md:ml-72 md:px-6 md:pt-6">
-        <div class="flex items-center justify-between gap-4 pb-3 md:flex-row md:items-center">
+      <main class="admin-main ml-0 min-h-screen flex-1 w-full bg-[#071330] px-3 pb-4 pt-3 md:ml-72 md:px-4 md:pt-4">
+        <div class="flex items-center justify-between gap-4 pb-2 md:flex-row md:items-center">
           <div>
             <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Admin Panel</p>
             <h2 class="text-3xl font-semibold text-[#0F172A]">{{ page_title }}</h2>
@@ -55,11 +55,11 @@
             Menu sidebar
           </button>
         </div>
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div class="text-[#334155]">Kelola dataset retina, hasil prediksi, dan performa model AI dalam satu platform.</div>
           <div>{% block page_actions %}{% endblock %}</div>
         </div>
-        <div class="space-y-6">{% block content %}{% endblock %}</div>
+        <div class="space-y-4">{% block content %}{% endblock %}</div>
       </main>
     </div>
     <script>

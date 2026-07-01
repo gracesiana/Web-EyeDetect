@@ -20,8 +20,6 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.contrib import messages
-from django.contrib.auth.models import User
 from urllib3 import request
 
 from ai_model.predict import predict_image
@@ -969,10 +967,7 @@ def admin_model_cnn(request):
     return render(request, 'admin_model_cnn.html', context)
 
 
-from django.contrib.auth.models import User
-
 def admin_users(request):
-
     users = User.objects.all().order_by('-date_joined')
 
     return render(
@@ -1008,24 +1003,3 @@ def admin_activity(request):
     context = _get_admin_data()
     context.update({'page_title': 'Riwayat Aktivitas', 'current_page': 'activity'})
     return render(request, 'admin_activity.html', context)
-
-
-def admin_users(request):
-
-    users = User.objects.all()
-
-    print("TOTAL USER:", users.count())
-
-    return render(
-        request,
-        'admin_users.html',
-        {
-            'users': users,
-            'total_users': users.count()
-        }
-    )
-
-def admin_settings(request):
-    context = _get_admin_data()
-    context.update({'page_title': 'Pengaturan', 'current_page': 'settings'})
-    return render(request, 'admin_settings.html', context)

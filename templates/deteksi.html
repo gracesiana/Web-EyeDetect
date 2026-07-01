@@ -43,6 +43,12 @@
             margin-bottom: 42px;
         }
 
+        .logo img {
+            max-height: 48px;
+            width: auto;
+            display: block;
+        }
+
         .logo-icon {
             font-size: 28px;
             color: #1473e6;
@@ -1131,11 +1137,7 @@
     <aside class="sidebar">
         <div>
             <div class="logo">
-<<<<<<< HEAD
-                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo" style="max-height: 72px; width: auto; display: block;">
-=======
-                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo" style="max-height: 48px; width: auto; display: block;">
->>>>>>> 5d7d44d197c1a2e068c5c21a682c2c90b60e6aa3
+                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo">
             </div>
 
             <nav class="menu">
@@ -1183,11 +1185,11 @@
                 </div>
             </div>
 
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                <button type="submit" class="analyze-btn">
-                    <i class="fa-solid fa-chart-simple"></i>
-                    Analisis Sekarang
+                <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Keluar
                 </button>
             </form>
         </div>
@@ -1252,89 +1254,6 @@
                 </button>
 
             </form>
-
-            <div class="detect-grid">
-
-                <div class="panel">
-                    <div class="panel-title">
-                        <i class="fa-regular fa-image"></i>
-                        Pratinjau Gambar
-                    </div>
-
-                    <div class="preview-box">
-                        <div class="preview-empty" id="previewEmpty" {% if uploaded_image %}style="display:none"{% endif %}>
-                            <i class="fa-regular fa-image"></i>
-                            <p>Gambar yang Anda unggah<br>akan ditampilkan di sini.</p>
-                        </div>
-
-                        <img
-                            id="bigPreview"
-                            alt="Pratinjau Gambar Retina"
-                            {% if uploaded_image %}src="{{ uploaded_image }}" style="display:block"{% endif %}
-                        >
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-title">
-                        <i class="fa-regular fa-clipboard"></i>
-                        Hasil Deteksi
-                    </div>
-
-                    <div class="result-list">
-                        <div class="result-row">
-                            <i class="fa-regular fa-file"></i>
-                            <strong>Nama File</strong>
-                            <span id="resultFileName">{{ filename|default:"-" }}</span>
-                        </div>
-
-                        <div class="result-row">
-                            <i class="fa-solid fa-bullseye"></i>
-                            <strong>Status Prediksi</strong>
-                            <span>{{ hasil|default:"-" }}</span>
-                        </div>
-
-                        <div class="result-row">
-                            <i class="fa-solid fa-gauge-high"></i>
-                            <strong>Tingkat Kepercayaan</strong>
-                            <span>
-                            {% if confidence %}
-                                {{ confidence|floatformat:2 }}%
-                            {% else %}
-                                -
-                            {% endif %}
-                            </span>
-                        </div>
-
-                        <div class="result-row">
-                            <i class="fa-solid fa-brain"></i>
-                            <strong>Visualisasi Explainable AI</strong>
-                            {% if gradcam_image %}
-                                <div style="margin-top:10px">
-                                    <img
-                                        src="{{ gradcam_image }}"
-                                        style="
-                                            width:100%;
-                                            border-radius:10px;
-                                            border:1px solid #dbe5f0;
-                                        "
-                                    >
-                        </div>
-                    {% else %}
-                        <span class="status-pill">
-                            Belum tersedia
-                        </span>
-                    {% endif %}
-                </div>
-                    </div>
-
-                    <div class="info-note">
-                        <i class="fa-solid fa-circle-info"></i>
-                        Hasil akan ditampilkan setelah proses analisis selesai.
-                    </div>
-                </div>
-
-            </div>
 
             {% if pipeline_data %}
                 <section class="ai-pipeline-section">
