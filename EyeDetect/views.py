@@ -2,6 +2,7 @@ import math
 import mimetypes
 import os
 import logging
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -9,17 +10,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.urls import reverse
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from urllib3 import request
 
 from ai_model.predict import predict_image
@@ -215,83 +209,43 @@ def daftar_proses(request):
     messages.success(request, 'Registrasi berhasil. Silakan login.')
     return redirect('login')
 
-def lupa_password(request):
-    if request.method == 'POST':
-        email = request.POST.get('email', '').strip()
+def password_baru(request):
 
-        if not email:
-            messages.error(request, 'Email harus diisi.')
-            return render(request, 'lupa-password.html')
+    if request.method == "POST":
 
-        users = User.objects.filter(email__iexact=email, is_active=True)
+        email = request.POST.get("email", "").strip()
+        password_baru = request.POST.get("password_baru")
+        konfirmasi_password = request.POST.get("konfirmasi_password")
 
-        for user in users:
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_url = request.build_absolute_uri(
-                reverse('reset_password', kwargs={'uidb64': uid, 'token': token})
+        if not email or not password_baru or not konfirmasi_password:
+            messages.error(request, "Semua kolom harus diisi.")
+            return render(request, "password_baru.html")
+
+        if password_baru != konfirmasi_password:
+            messages.error(request, "Konfirmasi password tidak sesuai.")
+            return render(request, "password_baru.html")
+
+        try:
+            user = User.objects.get(email__iexact=email)
+
+            user.set_password(password_baru)
+            user.save()
+
+            messages.success(
+                request,
+                "Password berhasil diperbarui. Silakan login kembali."
             )
-            message = render_to_string('password-reset-email.txt', {
-                'user': user,
-                'reset_url': reset_url,
-                'site_name': 'EyeDetect',
-            })
 
-            try:
-                send_mail(
-                    'Reset Password EyeDetect',
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [user.email],
-                    fail_silently=False,
-                )
-            except Exception:
-                logger.exception('Gagal mengirim email reset password.')
-                messages.error(request, 'Email reset belum bisa dikirim. Periksa konfigurasi SMTP aplikasi.')
-                return render(request, 'lupa-password.html', {'submitted_email': email})
+            return redirect("login")
 
-        messages.success(
-            request,
-            'Jika email terdaftar, link reset password sudah dikirim. Silakan periksa email Anda.'
-        )
-        return render(request, 'lupa-password.html', {'submitted_email': email})
+        except User.DoesNotExist:
 
-    return render(request, 'lupa-password.html')
+            messages.error(
+                request,
+                "Email tidak ditemukan."
+            )
 
-
-def reset_password(request, uidb64, token):
-    user = None
-    valid_token = False
-
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-        valid_token = default_token_generator.check_token(user, token)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist, ValidationError):
-        user = None
-
-    if not user or not valid_token:
-        messages.error(request, 'Link reset password tidak valid atau sudah kedaluwarsa.')
-        return render(request, 'reset-password.html', {'valid_token': False})
-
-    if request.method == 'POST':
-        password = request.POST.get('password', '')
-        password_confirmation = request.POST.get('password_confirmation', '')
-
-        if not password or not password_confirmation:
-            messages.error(request, 'Password dan konfirmasi password harus diisi.')
-            return render(request, 'reset-password.html', {'valid_token': True})
-
-        if password != password_confirmation:
-            messages.error(request, 'Password dan konfirmasi password tidak sama.')
-            return render(request, 'reset-password.html', {'valid_token': True})
-
-        user.set_password(password)
-        user.save()
-        messages.success(request, 'Password berhasil diubah. Silakan login dengan password baru.')
-        return redirect('login')
-
-    return render(request, 'reset-password.html', {'valid_token': True})
+    return render(request, "password_baru.html")
 
 def logout_user(request):
     # Allow logout via GET or POST — uses same logout for admin and regular users
@@ -339,17 +293,7 @@ def _build_xai_explanation(predicted_label, confidence):
             'summary': 'Grad-CAM memberi bobot tinggi pada pola kekeruhan dan perubahan intensitas yang mendukung prediksi katarak.',
             'reason': 'Model cenderung membaca tekstur buram, kontras rendah, dan sebaran cahaya yang tidak merata sebagai sinyal katarak.',
         },
-        'katarak': {
-            'focus': 'Area pusat retina dan sekitar lensa tampak paling dominan pada heatmap.',
-            'summary': 'Grad-CAM memberi bobot tinggi pada pola kekeruhan dan perubahan intensitas yang mendukung prediksi katarak.',
-            'reason': 'Model cenderung membaca tekstur buram, kontras rendah, dan sebaran cahaya yang tidak merata sebagai sinyal katarak.',
-        },
         'glaucoma': {
-            'focus': 'Heatmap lebih menonjol pada area optic disc dan struktur saraf optik.',
-            'summary': 'Area yang disorot menunjukkan pola yang berkaitan dengan perubahan cup-disc dan tepi papil optik.',
-            'reason': 'Model menggunakan bentuk optic disc, batas saraf optik, serta pola pembuluh di sekitarnya sebagai sinyal glaukoma.',
-        },
-        'glaukoma': {
             'focus': 'Heatmap lebih menonjol pada area optic disc dan struktur saraf optik.',
             'summary': 'Area yang disorot menunjukkan pola yang berkaitan dengan perubahan cup-disc dan tepi papil optik.',
             'reason': 'Model menggunakan bentuk optic disc, batas saraf optik, serta pola pembuluh di sekitarnya sebagai sinyal glaukoma.',
@@ -381,7 +325,7 @@ def _build_xai_explanation(predicted_label, confidence):
     }
 
 
-def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_image):
+def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_image, file_id=None):
     confidence_value = round(float(confidence or 0), 2)
     predicted_label = hasil or 'Belum terklasifikasi'
     feature_vector_preview = _build_feature_vector_preview(confidence_value, predicted_label)
@@ -417,6 +361,7 @@ def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_im
         classification_scores.append(score)
 
     return {
+        'file_id': file_id,
         'file_name': filename,
         'uploaded_image': uploaded_image,
         'preprocessing': {
@@ -426,7 +371,6 @@ def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_im
                 {'label': 'Normalization', 'value': 'Pixel range 0 - 1'},
                 {'label': 'Enhancement', 'value': 'Contrast balanced'},
             ],
-            'summary': 'Dummy preprocessing: resize, normalisasi intensitas, dan peningkatan kontras retina.',
         },
         'augmentation': {
             'image': uploaded_image,
@@ -452,7 +396,6 @@ def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_im
                     'class_name': 'augmentation-zoom',
                 },
             ],
-            'summary': 'Augmentasi membuat variasi citra retina agar model lebih kuat terhadap perubahan orientasi, sudut, dan skala gambar.',
         },
         'feature_extraction': {
             'model': 'MobileNetV2',
@@ -482,7 +425,6 @@ def _build_pipeline_data(filename, uploaded_image, hasil, confidence, gradcam_im
                     'detail': 'Karena ada 1280 channel, output akhirnya menjadi vektor berisi 1280 angka.',
                 },
             ],
-            'summary': 'Angka 1280 berasal dari jumlah channel pada layer fitur terakhir MobileNetV2. Setelah Global Average Pooling, setiap channel diringkas menjadi satu nilai, sehingga terbentuk feature vector 1 x 1280.',
         },
         'classification': {
             'label': predicted_label,
@@ -541,18 +483,18 @@ def deteksi(request):
             print("HASIL:", hasil)
             print("CONFIDENCE:", confidence)
 
-            if request.user.is_authenticated:
-                gradcam_filename = "gradcam_" + filename
+            gradcam_filename = "gradcam_" + filename
 
-                DetectionHistory.objects.create(
+            record_id = None
+            if request.user.is_authenticated:
+                history = DetectionHistory.objects.create(
                     user=request.user,
                     image=filename,
                     result=hasil,
                     confidence=confidence,
                     gradcam_image=gradcam_filename
                 )
-            else:
-                gradcam_filename = "gradcam_" + filename
+                record_id = history.pk
 
             gradcam_path = fs.path(gradcam_filename)
 
@@ -562,12 +504,67 @@ def deteksi(request):
             )
 
             gradcam_image = fs.url(gradcam_filename)
+
+            # derive a display id: prefer DB record id
+            display_id = record_id
+
+            # If no DB id, try to locate the image in the dataset folders to get class and index
+            if not display_id and filename:
+                dataset_root = getattr(settings, 'DATASET_ROOT', None)
+                found = False
+                if dataset_root:
+                    try:
+                        # search train and test subfolders and dataset root
+                        search_paths = [dataset_root, dataset_root / 'train', dataset_root / 'test']
+                        for sp in search_paths:
+                            if not sp or not sp.exists():
+                                continue
+                            for class_dir in sp.iterdir():
+                                if not class_dir.is_dir():
+                                    continue
+                                # get sorted list of image files in the class folder
+                                images = sorted([p for p in class_dir.iterdir() if p.suffix.lower() in DATASET_IMAGE_EXTENSIONS])
+                                target_name = Path(filename).name.lower()
+                                for idx, img in enumerate(images, start=1):
+                                    img_name = img.name.lower()
+                                    if img_name == filename.lower() or img_name == target_name or target_name in img_name or img_name in target_name:
+                                        display_id = f"{class_dir.name} #{idx}"
+                                        found = True
+                                        break
+                                if found:
+                                    break
+                            if found:
+                                break
+                    except Exception:
+                        # ignore dataset search errors and fall back
+                        found = False
+
+                # if still not found, prefer the original uploaded name (without suffix),
+                # otherwise try extract numeric id from filename or fallback to stem
+                if not found:
+                    original_name = getattr(retina_image, 'name', None)
+                    if original_name:
+                        try:
+                            display_id = Path(original_name).stem
+                        except Exception:
+                            display_id = original_name
+                    else:
+                        m = re.search(r"(\d+)", filename)
+                        if m:
+                            display_id = m.group(1)
+                        else:
+                            try:
+                                display_id = Path(filename).stem
+                            except Exception:
+                                display_id = filename
+
             pipeline_data = _build_pipeline_data(
                 filename,
                 uploaded_image,
                 hasil,
                 confidence,
-                gradcam_image
+                gradcam_image,
+                file_id=display_id
             )
 
             print("HASIL:", hasil)

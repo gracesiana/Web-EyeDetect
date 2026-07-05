@@ -20,7 +20,7 @@ urlpatterns = [
     path('daftar/proses/', views.daftar_proses, name='register_proses'),
 
     # PASSWORD
-    path('lupa-password/', views.lupa_password, name='lupa_password'),
+    path('password-baru/', views.password_baru, name='password_baru'),
 
     # DASHBOARD
     path('dashboard/', views.dashboard, name='dashboard'),
