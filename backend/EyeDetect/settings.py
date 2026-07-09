@@ -33,6 +33,27 @@ def _get_env_list(name, default):
     return [item.strip() for item in value.split(',') if item.strip()]
 
 
+def _get_railway_domains():
+    domains = []
+    for env_name in ('RAILWAY_PUBLIC_DOMAIN', 'RAILWAY_PRIVATE_DOMAIN', 'DOMAIN', 'PUBLIC_URL'):
+        value = os.getenv(env_name)
+        if value:
+            domains.append(value.strip())
+    return domains
+
+
+def _build_csrf_origins(domains):
+    origins = []
+    for domain in domains:
+        if not domain:
+            continue
+        if '://' in domain:
+            origins.append(domain)
+        else:
+            origins.extend([f'https://{domain}', f'http://{domain}'])
+    return origins
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -42,11 +63,14 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-@obpp_2$077pij
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = _get_env_bool('DJANGO_DEBUG', False)
 
-ALLOWED_HOSTS = _get_env_list('DJANGO_ALLOWED_HOSTS', ['127.0.0.1', 'localhost', '0.0.0.0', '.railway.app', '.vercel.app'])
-CSRF_TRUSTED_ORIGINS = _get_env_list(
-    'DJANGO_CSRF_TRUSTED_ORIGINS',
-    ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://*.railway.app', 'https://*.vercel.app'],
-)
+railway_domains = _get_railway_domains()
+allowed_hosts = _get_env_list('DJANGO_ALLOWED_HOSTS', ['127.0.0.1', 'localhost', '0.0.0.0', '.railway.app', '.vercel.app'])
+allowed_hosts.extend(railway_domains)
+ALLOWED_HOSTS = list(dict.fromkeys(allowed_hosts))
+
+csrf_default = ['http://127.0.0.1:8000', 'http://localhost:8000']
+csrf_default.extend(_build_csrf_origins(railway_domains))
+CSRF_TRUSTED_ORIGINS = _get_env_list('DJANGO_CSRF_TRUSTED_ORIGINS', csrf_default)
 
 SECURE_SSL_REDIRECT = _get_env_bool('DJANGO_SECURE_SSL_REDIRECT', False)
 if SECURE_SSL_REDIRECT:
