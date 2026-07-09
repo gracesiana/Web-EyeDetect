@@ -14,3 +14,12 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'EyeDetect.settings')
 
 application = get_wsgi_application()
+
+try:
+    import django
+    from django.core.management import call_command
+
+    django.setup()
+    call_command('ensure_default_admin', verbosity=0)
+except Exception:
+    pass
