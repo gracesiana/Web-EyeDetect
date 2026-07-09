@@ -42,6 +42,7 @@ Platform deteksi penyakit mata berbasis AI menggunakan Deep Learning (CNN dengan
 - **SQLite** - Database (Development)
 - **Gunicorn** - WSGI Server
 - **WhiteNoise** - Static Files
+- **Cloudinary** - Image Storage (Cloud)
 
 ### Frontend
 - **HTML5 / CSS3** - UI Structure
