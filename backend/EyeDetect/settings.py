@@ -40,12 +40,12 @@ def _get_env_list(name, default):
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-@obpp_2$077pijp(lms*4==qs)99g*wfn^)j%m#-&4gtgzv(#_')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = _get_env_bool('DJANGO_DEBUG', True)
+DEBUG = _get_env_bool('DJANGO_DEBUG', False)
 
-ALLOWED_HOSTS = _get_env_list('DJANGO_ALLOWED_HOSTS', ['127.0.0.1', 'localhost', '0.0.0.0'])
+ALLOWED_HOSTS = _get_env_list('DJANGO_ALLOWED_HOSTS', ['127.0.0.1', 'localhost', '0.0.0.0', '.railway.app', '.vercel.app'])
 CSRF_TRUSTED_ORIGINS = _get_env_list(
     'DJANGO_CSRF_TRUSTED_ORIGINS',
-    ['http://127.0.0.1:8000', 'http://localhost:8000'],
+    ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://*.railway.app', 'https://*.vercel.app'],
 )
 
 SECURE_SSL_REDIRECT = _get_env_bool('DJANGO_SECURE_SSL_REDIRECT', False)
