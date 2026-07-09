@@ -64,10 +64,18 @@ def login_proses(request):
     user = None
     try:
         user_obj = User.objects.filter(email__iexact=email).first()
+        candidate_usernames = []
         if user_obj is not None:
-            user = authenticate(request, username=user_obj.username, password=password)
-        else:
-            user = authenticate(request, username=email, password=password)
+            candidate_usernames.append(user_obj.username)
+            candidate_usernames.append(user_obj.email)
+        candidate_usernames.append(email)
+
+        for username in dict.fromkeys(candidate_usernames):
+            if not username:
+                continue
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                break
     except Exception:
         user = None
 
