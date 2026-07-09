@@ -47,10 +47,11 @@ def _build_csrf_origins(domains):
     for domain in domains:
         if not domain:
             continue
-        if '://' in domain:
-            origins.append(domain)
+        cleaned = domain.strip().rstrip('/')
+        if '://' in cleaned:
+            origins.append(cleaned)
         else:
-            origins.extend([f'https://{domain}', f'http://{domain}'])
+            origins.extend([f'https://{cleaned}', f'http://{cleaned}'])
     return origins
 
 
@@ -68,7 +69,7 @@ allowed_hosts = _get_env_list('DJANGO_ALLOWED_HOSTS', ['127.0.0.1', 'localhost',
 allowed_hosts.extend(railway_domains)
 ALLOWED_HOSTS = list(dict.fromkeys(allowed_hosts))
 
-csrf_default = ['http://127.0.0.1:8000', 'http://localhost:8000']
+csrf_default = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000']
 csrf_default.extend(_build_csrf_origins(railway_domains))
 CSRF_TRUSTED_ORIGINS = _get_env_list('DJANGO_CSRF_TRUSTED_ORIGINS', csrf_default)
 
