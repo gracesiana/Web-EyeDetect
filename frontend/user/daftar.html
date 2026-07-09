@@ -114,14 +114,33 @@
             font-size: 18px;
         }
 
-        .right-icon {
+        .password-toggle {
             position: absolute;
-            right: 20px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
+            width: 38px;
+            height: 38px;
+            border: none;
+            background: transparent;
             color: #7a8491;
-            font-size: 18px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            padding: 0;
+        }
+
+        .password-toggle:hover {
+            background: #f2f6fb;
+            color: #126ee5;
+        }
+
+        .password-toggle i {
+            position: static;
+            transform: none;
+            font-size: 18px;
         }
 
         .auth-btn {
@@ -285,13 +304,17 @@
                 <div class="input-group">
                     <i class="fa-solid fa-lock left-icon"></i>
                     <input type="password" name="password" placeholder="Password" id="password" required>
-                    <i class="fa-regular fa-eye right-icon" onclick="togglePassword('password', this)"></i>
+                    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Tampilkan password">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
                 </div>
 
                 <div class="input-group">
                     <i class="fa-solid fa-lock left-icon"></i>
                     <input type="password" name="password_confirmation" placeholder="Konfirmasi Password" id="confirmPassword" required>
-                    <i class="fa-regular fa-eye right-icon" onclick="togglePassword('confirmPassword', this)"></i>
+                    <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Tampilkan password">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
                 </div>
 
                 <button type="submit" class="auth-btn">Daftar</button>
@@ -321,17 +344,20 @@
     </div>
 
     <script>
-        function togglePassword(inputId, icon) {
-            const input = document.getElementById(inputId);
+        function togglePassword(button) {
+            const input = button.closest('.input-group').querySelector('input');
+            const icon = button.querySelector('i');
 
             if (input.type === "password") {
                 input.type = "text";
                 icon.classList.remove("fa-eye");
                 icon.classList.add("fa-eye-slash");
+                button.setAttribute('aria-label', 'Sembunyikan password');
             } else {
                 input.type = "password";
                 icon.classList.remove("fa-eye-slash");
                 icon.classList.add("fa-eye");
+                button.setAttribute('aria-label', 'Tampilkan password');
             }
         }
     </script>

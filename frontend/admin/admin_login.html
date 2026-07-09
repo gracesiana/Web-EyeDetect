@@ -42,10 +42,16 @@
     .form-panel h2 { margin: 0 0 8px; color: var(--text); }
     .form-panel p { color: var(--muted); margin-bottom: 20px; }
     .input-group { position: relative; margin-bottom: 14px; }
-    .input-group i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
-    .input-group input { width: 100%; padding: 13px 14px 13px 42px; border: 1px solid #cbd5e1; border-radius: 12px; outline: none; font-size: 14px; }
+    .input-group > i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    .input-group input { width: 100%; padding: 13px 48px 13px 42px; border: 1px solid #cbd5e1; border-radius: 12px; outline: none; font-size: 14px; }
     .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-    .right-icon { left: auto; right: 14px; cursor: pointer; }
+    .password-toggle {
+        position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+        width: 36px; height: 36px; border: 0; background: transparent; color: var(--muted);
+        cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; padding: 0;
+    }
+    .password-toggle:hover { background: rgba(37,99,235,0.08); color: var(--primary); }
+    .password-toggle i { position: static; transform: none; left: auto; font-size: 16px; }
     .btn-login { width: 100%; border: 0; padding: 13px; border-radius: 12px; background: var(--primary); color: white; font-weight: 700; cursor: pointer; margin-top: 8px; }
     .btn-login:hover { background: var(--primary-dark); }
     .helper-link { margin-top: 16px; font-size: 13px; }
@@ -84,7 +90,9 @@
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
                 <input type="password" name="password" id="password" placeholder="Password" required>
-                <i class="fa-regular fa-eye right-icon" onclick="togglePassword(this)"></i>
+                <button type="button" class="password-toggle" onclick="togglePassword(this)" aria-label="Tampilkan password">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
             </div>
             <button class="btn-login">Masuk sebagai Admin</button>
         </form>
@@ -94,10 +102,18 @@
     </div>
 </div>
 <script>
-function togglePassword(icon) {
-    const password = document.getElementById('password');
-    if (password.type === 'password') { password.type = 'text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
-    else { password.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+function togglePassword(button) {
+    const password = button.closest('.input-group').querySelector('input');
+    const icon = button.querySelector('i');
+    if (password.type === 'password') {
+        password.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+        button.setAttribute('aria-label', 'Sembunyikan password');
+    } else {
+        password.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+        button.setAttribute('aria-label', 'Tampilkan password');
+    }
 }
 </script>
 </body>
