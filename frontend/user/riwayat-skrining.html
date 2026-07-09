@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Skrining - EyeDetect</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f7faff;
+            color: #17202a;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e5eaf2;
+            padding: 28px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 45px;
+        }
+
+        .logo img {
+            max-height: 60px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-icon {
+            font-size: 34px;
+            color: #1473e6;
+        }
+
+        .logo h2 {
+            font-size: 27px;
+            color: #11243d;
+        }
+
+        .logo h2 span {
+            color: #1473e6;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #344054;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 16px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: 0.3s;
+        }
+
+        .menu a i {
+            font-size: 19px;
+            width: 22px;
+        }
+
+        .menu a.active,
+        .menu a:hover {
+            background: #edf5ff;
+            color: #1473e6;
+        }
+
+        .sidebar-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .user-box {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 16px;
+            background: #f7faff;
+            border-radius: 12px;
+        }
+
+        .user-box .avatar {
+            width: 45px;
+            height: 45px;
+            background: #1473e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .user-box h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .user-box p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff5757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e74c3c;
+        }
+
+        .logout-btn:hover {
+            background: #e74c3c;
+        }
+
+        main {
+            margin-left: 280px;
+            flex: 1;
+        }
+
+        .topbar {
+            background: white;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5eaf2;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .topbar-right i {
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .history-card {
+            background: white;
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 20px;
+            border: 1px solid #e8eff8;
+            box-shadow: 0 14px 30px rgba(20, 46, 89, 0.08);
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .history-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #102a57;
+        }
+
+        .history-card p {
+            font-size: 14px;
+            color: #546178;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .history-card .history-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .history-card .history-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #f4f8ff;
+            color: #2d4fb0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .history-image-group {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: stretch;
+        }
+
+        .history-image {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: flex-start;
+            align-items: center;
+            background: #f3f7ff;
+            border-radius: 18px;
+            padding: 14px;
+            height: 100%;
+        }
+
+        .history-image img {
+            width: 100%;
+            max-height: 150px;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
+        .history-image label {
+            font-size: 12px;
+            color: #42506d;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .history-status {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e3f2fd;
+            color: #1473e6;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .history-status.normal {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .history-status.warning {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .history-status.danger {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .empty-state p {
+            color: #999;
+            font-size: 16px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: #999;
+            font-size: 14px;
+            border-top: 1px solid #e5eaf2;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            main {
+                margin-left: 220px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                left: 0;
+                top: 0;
+                justify-content: flex-start;
+                flex-direction: row;
+                padding: 15px;
+            }
+
+            main {
+                margin-left: 0;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .topbar {
+                padding: 15px 20px;
+            }
+
+            .topbar h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div>
+            <div class="logo">
+                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo">
+            </div>
+
+            <nav class="menu">
+                <a href="{% url 'dashboard' %}">
+                    <i class="fa-solid fa-house"></i>
+                    Beranda
+                </a>
+
+                <a href="{% url 'deteksi' %}">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    Deteksi
+                </a>
+
+                <a href="{% url 'riwayat_skrining' %}" class="active">
+                    <i class="fa-regular fa-clock"></i>
+                    Riwayat Skrining
+                </a>
+
+                <a href="{% url 'faq' %}">
+                    <i class="fa-solid fa-circle-question"></i>
+                    FAQ
+                </a>
+
+                <a href="{% url 'profile' %}">
+                    <i class="fa-regular fa-user"></i>
+                    Profil Saya
+                </a>
+
+            </nav>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="user-box">
+                <div class="avatar">
+                    {% if profile.image %}
+                        <img src="{{ profile.image.url }}" alt="Foto Profil" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />
+                    {% else %}
+                        <i class="fa-solid fa-user"></i>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <h4>Halo, {{ user.get_full_name|default:user.username }}</h4>
+                    <p>Pengguna</p>
+                </div>
+            </div>
+
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Keluar
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main>
+        <header class="topbar">
+            <h1>Riwayat Skrining</h1>
+
+            <div class="topbar-right">
+                <i class="fa-regular fa-bell"></i>
+                <span>Halo, {{ user.get_full_name|default:user.username }}</span>
+            </div>
+        </header>
+
+        <section class="content">
+            {% if screenings %}
+                <div class="history-list">
+                    {% for screening in screenings %}
+                        <div class="history-card">
+                            <div>
+                                <h3>Skrining #{{ screening.id }}</h3>
+                                <p><strong>Tanggal:</strong> {{ screening.created_at|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Jenis Pemeriksaan:</strong> Analisis Retina</p>
+                                <p><strong>Hasil:</strong> {{ screening.result }}</p>
+                                <div class="history-meta">
+                                    <span><i class="fa-regular fa-percent"></i> {{ screening.confidence|floatformat:2 }}%</span>
+                                    <span><i class="fa-regular fa-clock"></i> {{ screening.created_at|timesince }} lalu</span>
+                                </div>
+                                <span class="history-status {% if screening.result|lower == 'normal' %}normal{% elif screening.result|lower == 'glaucoma' or screening.result|lower == 'diabetic retinopathy' or screening.result|lower == 'diabetes' %}warning{% else %}danger{% endif %}">
+                                    {{ screening.result }}
+                                </span>
+                            </div>
+                            <div class="history-image-group">
+                                {% if screening.image %}
+                                    <div class="history-image">
+                                        <label>Input</label>
+                                        <img src="{{ screening.image.url }}" alt="Input retina {{ screening.result }}" />
+                                    </div>
+                                {% endif %}
+                                {% if screening.gradcam_image %}
+                                    <div class="history-image">
+                                        <label>Heatmap</label>
+                                        <img src="{{ screening.gradcam_image.url }}" alt="Grad-CAM {{ screening.result }}" />
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fa-regular fa-calendar"></i>
+                    <h2>Belum Ada Riwayat Skrining</h2>
+                    <p>Anda belum melakukan skrining mata. Mulai deteksi sekarang untuk melihat riwayat pemeriksaan.</p>
+                </div>
+            {% endif %}
+
+            <footer class="footer">
+                © 2026 EyeDetect. Semua hak dilindungi.
+            </footer>
+        </section>
+    </main>
+
+</body>
+</html>

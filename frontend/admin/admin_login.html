@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login - EyeDetect</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --bg: #071330;
+        --card: rgba(255,255,255,0.96);
+        --text: #0f172a;
+        --muted: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #071330 0%, #133b72 100%);
+    }
+    .login-shell {
+        width: 100%; max-width: 950px; display: grid; grid-template-columns: 1fr 0.9fr; background: var(--card); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+    .hero-panel {
+        padding: 40px; background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%); color: white; display: flex; flex-direction: column; justify-content: center;
+    }
+    .hero-panel h1 { font-size: 30px; margin-bottom: 10px; }
+    .hero-panel p { line-height: 1.7; opacity: 0.95; }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .hero-badges span { background: rgba(255,255,255,0.16); padding: 8px 12px; border-radius: 999px; font-size: 13px; }
+    .form-panel { padding: 40px; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .brand i { color: var(--primary); font-size: 22px; }
+    .brand strong { font-size: 18px; color: var(--text); }
+    .form-panel h2 { margin: 0 0 8px; color: var(--text); }
+    .form-panel p { color: var(--muted); margin-bottom: 20px; }
+    .input-group { position: relative; margin-bottom: 14px; }
+    .input-group i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    .input-group input { width: 100%; padding: 13px 14px 13px 42px; border: 1px solid #cbd5e1; border-radius: 12px; outline: none; font-size: 14px; }
+    .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    .right-icon { left: auto; right: 14px; cursor: pointer; }
+    .btn-login { width: 100%; border: 0; padding: 13px; border-radius: 12px; background: var(--primary); color: white; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .btn-login:hover { background: var(--primary-dark); }
+    .helper-link { margin-top: 16px; font-size: 13px; }
+    .helper-link a { color: var(--primary); text-decoration: none; }
+    .error-text { color: #dc2626; font-size: 13px; margin-bottom: 10px; }
+    @media (max-width: 860px) { .login-shell { grid-template-columns: 1fr; } .hero-panel { display: none; } }
+</style>
+</head>
+<body>
+<div class="login-shell">
+    <div class="hero-panel">
+        <h1>Panel Admin EyeDetect</h1>
+        <p>Kelola dataset, hasil prediksi, dan performa model AI dari satu dashboard admin yang aman dan terintegrasi.</p>
+        <div class="hero-badges">
+            <span><i class="fa-solid fa-shield-halved"></i> Secure</span>
+            <span><i class="fa-solid fa-chart-line"></i> Insights</span>
+            <span><i class="fa-solid fa-robot"></i> AI</span>
+        </div>
+    </div>
+    <div class="form-panel">
+        <div class="brand"><i class="fa-solid fa-user-shield"></i><strong>EyeDetect Admin</strong></div>
+        <h2>Masuk sebagai Admin</h2>
+        <p>Gunakan akun admin atau staff untuk mengakses dashboard.</p>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error-text">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form action="{% url 'login_proses' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="login_as_admin" value="1" />
+            <div class="input-group">
+                <i class="fa-regular fa-envelope"></i>
+                <input type="email" name="email" placeholder="Email admin" value="{{ request.POST.email|default:'' }}" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" name="password" id="password" placeholder="Password" required>
+                <i class="fa-regular fa-eye right-icon" onclick="togglePassword(this)"></i>
+            </div>
+            <button class="btn-login">Masuk sebagai Admin</button>
+        </form>
+        <div class="helper-link">
+            <a href="{% url 'login' %}">Kembali ke login pengguna</a>
+        </div>
+    </div>
+</div>
+<script>
+function togglePassword(icon) {
+    const password = document.getElementById('password');
+    if (password.type === 'password') { password.type = 'text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+    else { password.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mulai Deteksi - EyeDetect</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #f4f8ff;
+            color: #061b49;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e5eaf2;
+            padding: 28px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 45px;
+        }
+
+        .logo img {
+            max-height: 60px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-icon {
+            font-size: 34px;
+            color: #1473e6;
+        }
+
+        .logo h2 {
+            font-size: 27px;
+            color: #11243d;
+        }
+
+        .logo h2 span {
+            color: #1473e6;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #344054;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 16px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: 0.3s;
+        }
+
+        .menu a i {
+            font-size: 19px;
+            width: 22px;
+        }
+
+        .menu a.active,
+        .menu a:hover {
+            background: #edf5ff;
+            color: #1473e6;
+        }
+
+        .sidebar-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .user-box {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 16px;
+            background: #f7faff;
+            border-radius: 12px;
+        }
+
+        .user-box .avatar {
+            width: 45px;
+            height: 45px;
+            background: #1473e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .user-box h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .user-box p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff5757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e74c3c;
+        }
+
+        .main {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 76px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5edf8;
+            padding: 0 46px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar h1 {
+            font-size: 30px;
+            font-weight: 800;
+            color: #061b49;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: #061b49;
+            font-size: 16px;
+        }
+
+        .topbar-right i {
+            font-size: 20px;
+        }
+
+        .content {
+            padding: 30px 42px;
+        }
+
+        .detect-header {
+            text-align: center;
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .detect-header h2 {
+            font-size: 38px;
+            font-weight: 900;
+            color: #061b49;
+            margin-bottom: 8px;
+        }
+
+        .detect-header p {
+            font-size: 14px;
+            color: #667085;
+        }
+
+        .upload-card {
+            width: 620px;
+            max-width: 100%;
+            margin: 0 auto 22px;
+            background: #ffffff;
+            border: 1px solid #dfe9f7;
+            border-radius: 14px;
+            box-shadow: 0 8px 22px rgba(20, 115, 230, 0.08);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .upload-top-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #eaf3ff;
+            color: #1473e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin: 0 auto 12px;
+            border: 1px solid #b8d6ff;
+        }
+
+        .upload-card h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #061b49;
+            margin-bottom: 6px;
+        }
+
+        .upload-card p {
+            font-size: 12px;
+            color: #667085;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .drop-area {
+            width: 380px;
+            max-width: 100%;
+            height: 150px;
+            margin: 0 auto 12px;
+            border: 2px dashed #9fc4ff;
+            border-radius: 12px;
+            background: #f8fbff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-area img {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+            object-fit: contain;
+        }
+
+        .drop-placeholder {
+            text-align: center;
+            color: #9ab2d4;
+        }
+
+        .drop-placeholder i {
+            font-size: 58px;
+            margin-bottom: 8px;
+        }
+
+        .upload-info {
+            font-size: 12px;
+            color: #667085;
+            margin-bottom: 10px;
+        }
+
+        .file-format {
+            font-size: 12px;
+            font-weight: 700;
+            color: #667085;
+            margin-bottom: 12px;
+        }
+
+        .choose-btn {
+            height: 38px;
+            padding: 0 28px;
+            border: none;
+            background: #1473e6;
+            color: #ffffff;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analyze-btn {
+            width: 230px;
+            height: 44px;
+            border: none;
+            background: #061b49;
+            color: #ffffff;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 0 auto 20px;
+        }
+
+        .detect-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            max-width: 880px;
+            margin: 0 auto 22px;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #dfe9f7;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #1473e6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .preview-box {
+            min-height: 210px;
+            border: 1.5px dashed #d0def2;
+            background: #f8fbff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #8494ad;
+            padding: 14px;
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .preview-empty i {
+            font-size: 54px;
+            margin-bottom: 10px;
+            color: #aebbd0;
+        }
+
+        .preview-empty p {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .result-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .result-row {
+            min-height: 42px;
+            border-bottom: 1px solid #edf2fa;
+            display: grid;
+            grid-template-columns: 28px 1fr auto;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #344054;
+        }
+
+        .result-row i {
+            color: #1473e6;
+            font-size: 16px;
+        }
+
+        .result-row strong {
+            font-size: 12px;
+            color: #061b49;
+        }
+
+        .result-row span {
+            color: #667085;
+            font-size: 12px;
+        }
+
+        .status-pill {
+            background: #edf4ff;
+            color: #667085;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .info-note {
+            margin-top: 12px;
+            background: #edf4ff;
+            color: #1473e6;
+            font-size: 12px;
+            padding: 11px 12px;
+            border-radius: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ai-pipeline-section {
+            width: 100%;
+            max-width: 1120px;
+            margin: 0 auto 24px;
+            background: #ffffff;
+            border: 1px solid #dfe9f7;
+            border-radius: 14px;
+            box-shadow: 0 12px 28px rgba(6, 27, 73, 0.08);
+            padding: 24px;
+        }
+
+        .pipeline-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .pipeline-heading h3 {
+            font-size: 22px;
+            font-weight: 900;
+            color: #061b49;
+            margin-bottom: 4px;
+        }
+
+        .pipeline-heading p {
+            font-size: 13px;
+            color: #667085;
+            margin: 0;
+        }
+
+        .pipeline-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eaf8f0;
+            color: #17613a;
+            border: 1px solid #bce4ca;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .pipeline-progress {
+            display: none;
+        }
+
+        .pipeline-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .pipeline-stage {
+            display: grid;
+            grid-template-columns: 150px minmax(0, 1fr);
+            gap: 16px;
+            position: relative;
+        }
+
+        .pipeline-stage-rail {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #667085;
+            font-size: 13px;
+            font-weight: 800;
+            padding-top: 8px;
+        }
+
+        .pipeline-stage-rail::after {
+            content: "";
+            position: absolute;
+            left: 19px;
+            top: 50px;
+            bottom: -24px;
+            width: 2px;
+            background: #cfe0f6;
+            z-index: 0;
+        }
+
+        .pipeline-stage:last-child .pipeline-stage-rail::after {
+            display: none;
+        }
+
+        .pipeline-stage-label {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            line-height: 1.25;
+        }
+
+        .pipeline-stage-label strong {
+            color: #061b49;
+            font-size: 13px;
+        }
+
+        .pipeline-dot {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            background: #1473e6;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            border: 4px solid #ddecff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pipeline-stage-content {
+            min-width: 0;
+        }
+
+        .pipeline-card {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #e1eaf7;
+            overflow: visible;
+        }
+
+        .pipeline-card .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .pipeline-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 900;
+            color: #061b49;
+            margin-bottom: 12px;
+        }
+
+        .pipeline-card-title i {
+            color: #1473e6;
+        }
+
+        .pipeline-card-layout {
+            display: grid;
+            grid-template-columns: minmax(220px, 0.85fr) minmax(260px, 1fr);
+            gap: 22px;
+            align-items: center;
+        }
+
+        .feature-extraction-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .pipeline-stage-group {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .pipeline-image-frame {
+            aspect-ratio: 4 / 3;
+            border-radius: 8px;
+            border: 1px solid #dbe7f5;
+            background: #f8fbff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .pipeline-image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .processed-image {
+            filter: contrast(1.12) saturate(0.9) brightness(1.04);
+        }
+
+        .pipeline-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .pipeline-meta li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 1px solid #eef3fb;
+            padding-bottom: 7px;
+            font-size: 12px;
+            color: #667085;
+        }
+
+        .pipeline-meta strong {
+            color: #061b49;
+            font-size: 12px;
+        }
+
+        .pipeline-summary {
+            color: #667085;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 10px 0 0;
+        }
+
+        .augmentation-variants {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .augmentation-tile {
+            position: relative;
+            height: 112px;
+            border: 1px solid #dbe7f5;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #061b49;
+        }
+
+        .augmentation-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s ease;
+        }
+
+        .augmentation-flip img {
+            transform: scaleX(-1);
+        }
+
+        .augmentation-rotate img {
+            transform: rotate(9deg) scale(1.12);
+        }
+
+        .augmentation-zoom img {
+            transform: scale(1.25);
+        }
+
+        .augmentation-tile span {
+            position: absolute;
+            left: 7px;
+            right: 7px;
+            bottom: 7px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            border-radius: 999px;
+            background: rgba(6, 27, 73, 0.82);
+            color: #ffffff;
+            padding: 5px 6px;
+            font-size: 10px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .feature-map-frame {
+            position: relative;
+            background: #061b49;
+        }
+
+        .feature-map-frame img {
+            object-fit: cover;
+        }
+
+        .feature-map-badge {
+            position: absolute;
+            left: 10px;
+            bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(6, 27, 73, 0.84);
+            color: #bff5ff;
+            border: 1px solid rgba(101, 214, 255, 0.55);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 900;
+            backdrop-filter: blur(6px);
+        }
+
+        .feature-tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #eaf3ff;
+            color: #1473e6;
+            border: 1px solid #b8d6ff;
+            cursor: help;
+            margin-left: auto;
+        }
+
+        .feature-tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 230px;
+            background: #061b49;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 9px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.4;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-4px);
+            transition: 0.18s ease;
+            z-index: 5;
+            box-shadow: 0 10px 22px rgba(6, 27, 73, 0.22);
+        }
+
+        .feature-tooltip:hover::after,
+        .feature-tooltip:focus::after {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feature-process-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .feature-process-item {
+            display: grid;
+            grid-template-columns: 34px 1fr;
+            gap: 9px;
+            padding: 9px;
+            border: 1px solid #e1eaf7;
+            border-radius: 8px;
+            background: #f8fbff;
+        }
+
+        .feature-process-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: #eaf3ff;
+            color: #1473e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .feature-process-content strong {
+            display: block;
+            color: #061b49;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        .feature-process-content span {
+            display: block;
+            color: #1473e6;
+            font-size: 11px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        .feature-process-content p {
+            color: #667085;
+            font-size: 11px;
+            line-height: 1.35;
+            margin: 4px 0 0;
+        }
+
+        .feature-vector-output {
+            margin-top: 12px;
+            border: 1px solid #cfe0f6;
+            background: #f8fbff;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .feature-vector-output h4 {
+            font-size: 12px;
+            font-weight: 900;
+            color: #061b49;
+            margin-bottom: 8px;
+        }
+
+        .feature-vector-formula {
+            border-radius: 8px;
+            background: #061b49;
+            color: #dff7ff;
+            padding: 9px 10px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12px;
+            line-height: 1.45;
+            margin-bottom: 9px;
+        }
+
+        .feature-vector-values {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 7px;
+        }
+
+        .feature-vector-values span {
+            border: 1px solid #dbe7f5;
+            border-radius: 7px;
+            background: #ffffff;
+            color: #061b49;
+            padding: 6px 7px;
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .xai-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #bce4ca;
+            background: #eaf8f0;
+            color: #17613a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 14px;
+        }
+
+        .xai-explanation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .xai-box {
+            border: 1px solid #dbe7f5;
+            background: #f8fbff;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .xai-box strong {
+            display: block;
+            color: #061b49;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .xai-box p {
+            color: #667085;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .pipeline-info-note {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 16px;
+            border: 1px solid #9fc4ff;
+            background: #f2f7ff;
+            color: #1473e6;
+            border-radius: 8px;
+            padding: 11px 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .classification-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #f8fbff;
+            border: 1px solid #dbe7f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .classification-label strong {
+            font-size: 16px;
+            color: #061b49;
+        }
+
+        .confidence-pill {
+            background: #eaf8f0;
+            color: #17613a;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: 82px 1fr 44px;
+            gap: 8px;
+            align-items: center;
+            font-size: 11px;
+            color: #667085;
+            margin-bottom: 8px;
+        }
+
+        .score-row .progress {
+            height: 7px;
+            background: #e7edf7;
+        }
+
+        .gradcam-empty {
+            color: #8494ad;
+            font-size: 12px;
+            text-align: center;
+            padding: 18px;
+        }
+
+        .how-card {
+            max-width: 880px;
+            margin: 0 auto 0;
+            background: #ffffff;
+            border: 1px solid #dfe9f7;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .how-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #1473e6;
+            margin-bottom: 14px;
+        }
+
+        .how-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .how-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .how-icon {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            background: #eaf3ff;
+            color: #1473e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .how-item h4 {
+            font-size: 12px;
+            color: #061b49;
+            margin-bottom: 3px;
+        }
+
+        .how-item p {
+            font-size: 10px;
+            color: #667085;
+            line-height: 1.3;
+        }
+
+        .footer-bar {
+            margin-top: 28px;
+            height: 54px;
+            background: #06285f;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 38px;
+            font-size: 12px;
+        }
+
+        .footer-bar div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 1000px) {
+            .sidebar {
+                width: 230px;
+            }
+
+            .main {
+                margin-left: 230px;
+                width: calc(100% - 230px);
+            }
+
+            .detect-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .how-steps {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pipeline-heading {
+                flex-direction: column;
+            }
+
+            .pipeline-stage {
+                grid-template-columns: 130px minmax(0, 1fr);
+                gap: 12px;
+            }
+
+            .pipeline-card-layout,
+            .feature-extraction-layout {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .pipeline-stage-group,
+            .xai-explanation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 24px 18px;
+            }
+
+            .detect-header h2 {
+                font-size: 30px;
+            }
+
+            .how-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .ai-pipeline-section {
+                padding: 18px;
+            }
+
+            .pipeline-stage {
+                grid-template-columns: 1fr;
+            }
+
+            .pipeline-stage-rail {
+                align-items: center;
+                padding-top: 0;
+            }
+
+            .pipeline-stage-rail::after {
+                display: none;
+            }
+
+            .pipeline-card .card-body {
+                padding: 16px;
+            }
+
+            .augmentation-variants,
+            .feature-vector-values {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .footer-bar {
+                flex-direction: column;
+                height: auto;
+                gap: 10px;
+                padding: 18px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div>
+            <div class="logo">
+                <img src="{% static 'images/LOGO_EYEDETECT.png' %}" alt="EyeDetect Logo">
+            </div>
+
+            <nav class="menu">
+                <a href="{% url 'dashboard' %}">
+                    <i class="fa-solid fa-house"></i>
+                    Beranda
+                </a>
+
+                <a href="{% url 'deteksi' %}" class="active">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    Deteksi
+                </a>
+
+                <a href="{% url 'riwayat_skrining' %}">
+                    <i class="fa-regular fa-clock"></i>
+                    Riwayat Skrining
+                </a>
+
+                <a href="{% url 'faq' %}">
+                    <i class="fa-solid fa-circle-question"></i>
+                    FAQ
+                </a>
+                
+                <a href="{% url 'profile' %}">
+                    <i class="fa-regular fa-user"></i>
+                    Profil Saya
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="user-box">
+                <div class="avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <div>
+                    <h4>Halo, {{ user.get_full_name|default:user.username }}</h4>
+                    <p>Pengguna</p>
+                </div>
+            </div>
+
+                <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Keluar
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <h1>Mulai Deteksi</h1>
+
+            <div class="topbar-right">
+                <i class="fa-regular fa-bell"></i>
+                <span>Halo, {{ user.get_full_name|default:user.username }}</span>
+            </div>
+        </header>
+
+        <section class="content">
+
+            <div class="detect-header">
+                <p>Unggah citra retina untuk memulai proses analisis penyakit mata.</p>
+            </div>
+
+<form action="{% url 'deteksi' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <input
+                    type="file"
+                    name="retina_image"
+                    id="retinaImage"
+                    accept="image/png,image/jpeg,image/jpg"
+                    hidden
+                >
+                
+                <div class="upload-card">
+                    <div class="upload-top-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+
+                    <h3>Upload Gambar Retina</h3>
+                    <p>Unggah gambar retina (fundus) dengan kualitas yang jelas<br>agar analisis lebih akurat.</p>
+
+                    <label for="retinaImage" class="drop-area">
+                        <div class="drop-placeholder" id="dropPlaceholder">
+                            <i class="fa-regular fa-image"></i>
+                            <p>Seret & lepas gambar di sini<br>atau klik tombol di bawah</p>
+                        </div>
+
+                        <img id="uploadPreview" alt="Preview Gambar Retina">
+                    </label>
+
+                    <div class="upload-info" id="fileName">{{ filename|default:"Belum ada file dipilih" }}</div>
+                    <div class="file-format">Format: JPG, JPEG, PNG</div>
+
+                    <button type="button" class="choose-btn" onclick="document.getElementById('retinaImage').click()">
+                        <i class="fa-regular fa-folder-open"></i>
+                        Pilih Gambar
+                    </button>
+                </div>
+
+                <button type="submit" class="analyze-btn">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    Analisis Sekarang
+                </button>
+
+            </form>
+
+            {% if pipeline_data %}
+                <section class="ai-pipeline-section">
+                    <div class="pipeline-heading">
+                        <div>
+                            <h3>Visualisasi Alur AI</h3>
+                            <p>Alur pemrosesan citra retina dari unggah hingga Explainable AI.</p>
+                        </div>
+
+                        <div class="pipeline-badge">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Pipeline Selesai
+                        </div>
+                    </div>
+
+                    <div class="pipeline-timeline" aria-label="AI pipeline progress">
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">1</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Unggah</strong>
+                                    Gambar Retina
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-regular fa-image"></i>
+                                            Upload Retina Image
+                                        </div>
+
+                                        <div class="pipeline-card-layout">
+                                            <div class="pipeline-image-frame">
+                                                <img src="{{ pipeline_data.uploaded_image }}" alt="Uploaded retina image">
+                                            </div>
+
+                                            <ul class="pipeline-meta">
+                                                <li><strong>File</strong><span>{{ pipeline_data.file_name }}</span></li>
+                                                <li><strong>Input</strong><span>Fundus Retina</span></li>
+                                                <li><strong>Status</strong><span class="text-success fw-bold">Uploaded</span></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">2</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Hasil</strong>
+                                    Pra-pemrosesan
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                            Preprocessing Result
+                                        </div>
+
+                                        <div class="pipeline-card-layout">
+                                            <div class="pipeline-image-frame">
+                                                <img class="processed-image" src="{{ pipeline_data.preprocessing.image }}" alt="Preprocessing result">
+                                            </div>
+
+                                            <div>
+                                                <ul class="pipeline-meta">
+                                                    {% for step in pipeline_data.preprocessing.steps %}
+                                                        <li><strong>{{ step.label }}</strong><span>{{ step.value }}</span></li>
+                                                    {% endfor %}
+                                                </ul>
+
+                                                <p class="pipeline-summary">{{ pipeline_data.preprocessing.summary }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">3</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Data</strong>
+                                    Augmentation
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-solid fa-shuffle"></i>
+                                            Data Augmentation
+                                        </div>
+
+                                        <div class="pipeline-card-layout">
+                                            <div class="augmentation-variants">
+                                                {% for variant in pipeline_data.augmentation.variants %}
+                                                    <div class="augmentation-tile {{ variant.class_name }}">
+                                                        <img src="{{ pipeline_data.augmentation.image }}" alt="{{ variant.label }} augmentation">
+                                                        <span>
+                                                            <i class="{{ variant.icon }}"></i>
+                                                            {{ variant.label }}
+                                                        </span>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+
+                                            <div>
+                                                <ul class="pipeline-meta">
+                                                    {% for step in pipeline_data.augmentation.steps %}
+                                                        <li><strong>{{ step.label }}</strong><span>{{ step.value }}</span></li>
+                                                    {% endfor %}
+                                                </ul>
+
+                                                <p class="pipeline-summary">{{ pipeline_data.augmentation.summary }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">4</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Ekstraksi</strong>
+                                    Fitur
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-solid fa-brain"></i>
+                                            Ekstraksi Fitur
+                                            <span
+                                                class="feature-tooltip"
+                                                tabindex="0"
+                                                data-tooltip="Peta fitur merepresentasikan pola yang dipelajari oleh CNN sebelum klasifikasi."
+                                                aria-label="Peta fitur merepresentasikan pola yang dipelajari oleh CNN sebelum klasifikasi."
+                                            >
+                                                <i class="fa-solid fa-info"></i>
+                                            </span>
+                                        </div>
+
+                                        <div class="feature-extraction-layout">
+                                            <ul class="pipeline-meta">
+                                                <li><strong>Model</strong><span>{{ pipeline_data.feature_extraction.model }}</span></li>
+                                                <li><strong>Feature Vector</strong><span>{{ pipeline_data.feature_extraction.feature_vector }}</span></li>
+                                                <li><strong>Processing Time</strong><span>{{ pipeline_data.feature_extraction.processing_time }}</span></li>
+                                            </ul>
+
+                                            <div class="feature-vector-output">
+                                                <h4>Output Feature Vector</h4>
+                                                <div class="feature-vector-formula">
+                                                    {{ pipeline_data.feature_extraction.vector_preview.formula }}<br>
+                                                    F: {{ pipeline_data.feature_extraction.vector_preview.source_shape }} -> v: {{ pipeline_data.feature_extraction.vector_preview.output_shape }}
+                                                </div>
+                                                <div class="feature-vector-values">
+                                                    {% for vector in pipeline_data.feature_extraction.vector_preview.values %}
+                                                        <span>{{ vector.index }} = {{ vector.value }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            <div class="feature-process-list">
+                                                {% for process in pipeline_data.feature_extraction.processes %}
+                                                    <div class="feature-process-item">
+                                                        <div class="feature-process-icon">
+                                                            <i class="{{ process.icon }}"></i>
+                                                        </div>
+                                                        <div class="feature-process-content">
+                                                            <strong>{{ process.label }}</strong>
+                                                            <span>{{ process.value }}</span>
+                                                            <p>{{ process.detail }}</p>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <p class="pipeline-summary">{{ pipeline_data.feature_extraction.summary }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">5</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Hasil</strong>
+                                    Klasifikasi
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="pipeline-stage-group">
+                                    <div class="card pipeline-card shadow-sm">
+                                        <div class="card-body">
+                                            <div class="pipeline-card-title">
+                                                <i class="fa-solid fa-bullseye"></i>
+                                                Classification Result
+                                            </div>
+
+                                            <div class="classification-label">
+                                                <div>
+                                                    <span class="d-block text-muted small">Prediksi</span>
+                                                    <strong>{{ pipeline_data.classification.label }}</strong>
+                                                </div>
+                                                <span class="confidence-pill">{{ pipeline_data.classification.confidence }}%</span>
+                                            </div>
+
+                                            {% for score in pipeline_data.classification.scores %}
+                                                <div class="score-row">
+                                                    <span>{{ score.label }}</span>
+                                                    <div class="progress" role="progressbar" aria-label="{{ score.label }}" aria-valuenow="{{ score.value }}" aria-valuemin="0" aria-valuemax="100">
+                                                        <div class="progress-bar {% if forloop.first %}bg-success{% else %}bg-info{% endif %}" style="width: {{ score.value }}%"></div>
+                                                    </div>
+                                                    <strong>{{ score.value }}%</strong>
+                                                </div>
+                                            {% endfor %}
+
+                                            <p class="pipeline-summary">{{ pipeline_data.classification.summary }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="card pipeline-card shadow-sm">
+                                        <div class="card-body">
+                                            <div class="pipeline-card-title">
+                                                <i class="fa-solid fa-fire-flame-curved"></i>
+                                                Explainable AI (Grad-CAM)
+                                            </div>
+
+                                            <div class="pipeline-image-frame">
+                                                {% if pipeline_data.gradcam.image %}
+                                                    <img src="{{ pipeline_data.gradcam.image }}" alt="Grad-CAM heatmap">
+                                                {% else %}
+                                                    <div class="gradcam-empty">
+                                                        <i class="fa-regular fa-eye d-block fs-3 mb-2"></i>
+                                                        Grad-CAM belum tersedia
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <ul class="pipeline-meta">
+                                                <li><strong>Method</strong><span>Grad-CAM</span></li>
+                                                <li><strong>Output</strong><span>Heatmap</span></li>
+                                                <li><strong>Status</strong><span class="text-success fw-bold">Generated</span></li>
+                                            </ul>
+
+                                            <p class="pipeline-summary">{{ pipeline_data.gradcam.summary }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-stage">
+                            <div class="pipeline-stage-rail">
+                                <span class="pipeline-dot">6</span>
+                                <span class="pipeline-stage-label">
+                                    <strong>Penjelasan</strong>
+                                    AI (XAI)
+                                </span>
+                            </div>
+                            <div class="pipeline-stage-content">
+                                <div class="card pipeline-card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="pipeline-card-title">
+                                            <i class="fa-regular fa-comment-dots"></i>
+                                            Penjelasan AI
+                                        </div>
+
+                                        <div class="xai-status">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                            {{ pipeline_data.explanation.status }}
+                                        </div>
+
+                                        <div class="xai-explanation-grid">
+                                            <div class="xai-box">
+                                                <strong>Fokus Heatmap</strong>
+                                                <p>{{ pipeline_data.explanation.focus }}</p>
+                                            </div>
+                                            <div class="xai-box">
+                                                <strong>Alasan Model</strong>
+                                                <p>{{ pipeline_data.explanation.reason }}</p>
+                                            </div>
+                                            <div class="xai-box">
+                                                <strong>Catatan</strong>
+                                                <p>{{ pipeline_data.explanation.note }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="pipeline-info-note">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                            Seluruh pipeline diproses otomatis dari unggah gambar hingga penjelasan hasil.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            {% endif %}
+
+            <div class="how-card">
+                <div class="how-title">Cara Menggunakan</div>
+
+                <div class="how-steps">
+                    <div class="how-item">
+                        <div class="how-icon">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+                        <div>
+                            <h4>Privasi Aman</h4>
+                            <p>Gambar hanya digunakan untuk analisis.</p>
+                        </div>
+                    </div>
+
+                    <div class="how-item">
+                        <div class="how-icon">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div>
+                            <h4>Upload Gambar</h4>
+                            <p>Pilih citra retina yang jelas.</p>
+                        </div>
+                    </div>
+
+                    <div class="how-item">
+                        <div class="how-icon">
+                            <i class="fa-solid fa-chart-simple"></i>
+                        </div>
+                        <div>
+                            <h4>Klik Analisis</h4>
+                            <p>Sistem mulai memproses gambar.</p>
+                        </div>
+                    </div>
+
+                    <div class="how-item">
+                        <div class="how-icon">
+                            <i class="fa-regular fa-eye"></i>
+                        </div>
+                        <div>
+                            <h4>Lihat Hasil Deteksi</h4>
+                            <p>Prediksi akan tampil setelah selesai.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <div class="footer-bar">
+            <div>
+                <i class="fa-solid fa-shield-halved"></i>
+                Privasi Aman. Semua data dan gambar yang diunggah hanya digunakan untuk keperluan analisis.
+            </div>
+
+            <div>
+                <i class="fa-solid fa-shield-heart"></i>
+                Aman & Terpercaya
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const input = document.getElementById('retinaImage');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const dropPlaceholder = document.getElementById('dropPlaceholder');
+        const fileName = document.getElementById('fileName');
+
+        input.addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (!file) return;
+
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert('Format file harus JPG, JPEG, atau PNG.');
+                this.value = '';
+                return;
+            }
+
+            const imageUrl = URL.createObjectURL(file);
+
+            uploadPreview.src = imageUrl;
+            uploadPreview.style.display = 'block';
+            dropPlaceholder.style.display = 'none';
+            fileName.textContent = file.name;
+        });
+    </script>
+
+</body>
+</html>
