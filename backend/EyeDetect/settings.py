@@ -205,13 +205,16 @@ CLOUDINARY_STORAGE = {
 
 # Media files (Uploaded images)
 # Use Cloudinary in production, local storage in development
-if os.environ.get('CLOUDINARY_CLOUD_NAME'):
+USE_CLOUDINARY = bool(os.environ.get('CLOUDINARY_CLOUD_NAME'))
+if USE_CLOUDINARY:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     MEDIA_URL = '/media/'  # Cloudinary will handle the actual URL
+    print(f"✅ Cloudinary ENABLED: {CLOUDINARY_STORAGE['CLOUD_NAME']}")
 else:
     # Local development
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
+    print("⚠️ Cloudinary DISABLED: Using local file storage")
 
 # Authentication redirects
 LOGIN_URL = '/login/'
