@@ -159,16 +159,23 @@ def logout_user(request):
 
 @login_required(login_url='/login/')
 def dashboard(request):
-    total_screenings = DetectionHistory.objects.filter(user=request.user).count()
-    latest_screenings = DetectionHistory.objects.filter(user=request.user).order_by('-created_at')[:3]
-    last_screening = DetectionHistory.objects.filter(user=request.user).order_by('-created_at').first()
+    try:
+        total_screenings = DetectionHistory.objects.filter(user=request.user).count()
+        latest_screenings = DetectionHistory.objects.filter(user=request.user).order_by('-created_at')[:3]
+        last_screening = DetectionHistory.objects.filter(user=request.user).order_by('-created_at').first()
+    except Exception:
+        total_screenings = 0
+        latest_screenings = []
+        last_screening = None
+
     profile_image_url = None
     try:
         profile = request.user.profile
-        if profile.image:
+        if getattr(profile, 'image', None):
             profile_image_url = profile.image.url
     except Exception:
         pass
+
     return render(request, 'dashboard.html', {
         'screeningCount': total_screenings,
         'total_screenings': total_screenings,
