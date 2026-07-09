@@ -48,7 +48,7 @@ urlpatterns = [
     path('cara-kerja/', views.cara_kerja, name='cara_kerja'),
     path('profile/', views.profile, name='profile'),
     path('riwayat-skrining/', views.riwayat, name='riwayat_skrining'),
-    path('pengaturan/', views.pengaturan, name='pengaturan'),
+    path('faq/', views.faq, name='faq'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

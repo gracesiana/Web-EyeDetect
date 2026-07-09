@@ -1,25 +1,28 @@
-import tensorflow as tf
-import numpy as np
-import cv2
 from pathlib import Path
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 
 BASE_DIR = Path(__file__).resolve().parent
-
-model = load_model(BASE_DIR / "eye_disease_model.h5")
-
 LAST_CONV_LAYER = "Conv_1"
 
 
+def _load_gradcam_model():
+    import tensorflow as tf
+    from tensorflow.keras.models import load_model
+
+    model = load_model(BASE_DIR / "eye_disease_model.h5")
+    return tf, model
+
+
 def generate_gradcam(img_path, output_path):
+    import numpy as np
+    import cv2
+    import tensorflow as tf
+    from tensorflow.keras.preprocessing import image
+
+    tf, model = _load_gradcam_model()
 
     img = image.load_img(img_path, target_size=(224, 224))
-
     img_array = image.img_to_array(img)
-
     img_array = np.expand_dims(img_array, axis=0)
-
     img_array = img_array / 255.0
 
     grad_model = tf.keras.models.Model(

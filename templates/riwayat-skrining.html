@@ -22,15 +22,10 @@
             min-height: 100vh;
             display: flex;
         }
-            .logo img {
-                max-height: 60px;
-                width: auto;
-                display: block;
-            }
 
         .sidebar {
             width: 280px;
-            min-height: 100vh;
+            height: 100vh;
             background: #ffffff;
             border-right: 1px solid #e5eaf2;
             padding: 28px 22px;
@@ -40,6 +35,7 @@
             position: fixed;
             left: 0;
             top: 0;
+            bottom: 0;
         }
 
         .logo {
@@ -47,6 +43,12 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 45px;
+        }
+
+        .logo img {
+            max-height: 60px;
+            width: auto;
+            display: block;
         }
 
         .logo-icon {
@@ -144,6 +146,10 @@
             justify-content: center;
             gap: 10px;
             transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e74c3c;
         }
 
         .logout-btn:hover {
@@ -381,11 +387,6 @@
                     Beranda
                 </a>
 
-                <a href="{% url 'cara_kerja' %}">
-                    <i class="fa-regular fa-book-open"></i>
-                    Cara Kerja/Panduan
-                </a>
-
                 <a href="{% url 'deteksi' %}">
                     <i class="fa-solid fa-stethoscope"></i>
                     Deteksi
@@ -396,15 +397,16 @@
                     Riwayat Skrining
                 </a>
 
+                <a href="{% url 'faq' %}">
+                    <i class="fa-solid fa-circle-question"></i>
+                    FAQ
+                </a>
+
                 <a href="{% url 'profile' %}">
                     <i class="fa-regular fa-user"></i>
                     Profil Saya
                 </a>
 
-                <a href="#">
-                    <i class="fa-solid fa-gear"></i>
-                    Pengaturan
-                </a>
             </nav>
         </div>
 

@@ -18,7 +18,7 @@ from urllib3 import request
 
 from ai_model.predict import predict_image
 from ai_model.gradcam import generate_gradcam
-from appdeteksi.models import DetectionHistory, DatasetSample
+from appdeteksi.models import DetectionHistory, DatasetSample, Profile
 
 
 logger = logging.getLogger(__name__)
@@ -589,13 +589,31 @@ def cara_kerja(request):
 def profile(request):
     total_screenings = 0
     last_screening = None
+    profile_image_url = None
+    profile = None
+
     if request.user.is_authenticated:
         total_screenings = DetectionHistory.objects.filter(user=request.user).count()
         last_screening = DetectionHistory.objects.filter(user=request.user).order_by('-created_at').first()
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        if profile.image:
+            profile_image_url = profile.image.url
+
+    if request.method == 'POST' and request.user.is_authenticated:
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        uploaded_image = request.FILES.get('profile_image')
+        if uploaded_image:
+            profile.image = uploaded_image
+            profile.save()
+            messages.success(request, 'Foto profil berhasil diperbarui.')
+            return redirect('profile')
+        else:
+            messages.warning(request, 'Tidak ada file yang dipilih.')
 
     return render(request, 'profile.html', {
         'total_screenings': total_screenings,
         'last_screening': last_screening,
+        'profile_image_url': profile_image_url,
     })
 
 def riwayat(request):
@@ -617,9 +635,84 @@ def riwayat(request):
         'last_screening': last_screening,
     })
 
-def pengaturan(request):
-    return render(request, 'pengaturan.html', {
-        'current_page': 'settings'
+def faq(request):
+    faq_sections = [
+        {
+            'title': 'KEAMANAN & PRIVASI',
+            'items': [
+                {
+                    'q': 'Bagaimana terkait keamanan dan kerahasiaan data pengguna EyeDetect.com?',
+                    'a': "Kami memahami bahwa data citra mata dan informasi kesehatan bersifat sensitif. Secara umum, praktik yang diterapkan platform skrining kesehatan seperti ini meliputi:<ul><li>Enkripsi data saat pengiriman maupun penyimpanan</li><li>Akses data dibatasi hanya untuk kebutuhan analisis dan ditangani oleh pihak yang berwenang</li><li>Data tidak dibagikan ke pihak ketiga tanpa persetujuan pengguna</li><li>Pengguna dapat meminta penghapusan data sesuai kebijakan privasi yang berlaku</li></ul>"
+                }
+            ]
+        },
+        {
+            'title': 'CARA KERJA',
+            'items': [
+                {
+                    'q': 'Bagaimana cara kerja skrining EyeDetect?',
+                    'a': "Skrining EyeDetect bekerja dengan langkah berikut:<ol><li>Pengguna mengunggah citra retina/mata.</li><li>Sistem memproses citra menggunakan model deep learning (CNN berbasis MobileNetV2) yang telah dilatih mengenali pola-pola indikasi penyakit mata.</li><li>Model menganalisis citra dan menghasilkan prediksi beserta tingkat kepercayaan (confidence score).</li><li>Hasil dilengkapi visualisasi Explainable AI (XAI) yang menunjukkan area citra mana yang paling memengaruhi hasil prediksi, sehingga proses analisis lebih transparan.</li></ol>"
+                }
+            ]
+        },
+        {
+            'title': 'HASIL SKRINING',
+            'items': [
+                {
+                    'q': 'Bagaimana hasil dari skrining EyeDetect?',
+                    'a': "Hasil skrining biasanya ditampilkan dalam bentuk:<ul><li><strong>Kategori/indikasi</strong> kondisi mata yang terdeteksi (misalnya normal atau indikasi kondisi tertentu)</li><li><strong>Tingkat kepercayaan (confidence score)</strong> dari prediksi tersebut</li><li><strong>Visualisasi XAI</strong> yang menyorot area citra sebagai dasar keputusan model</li></ul>"
+                }
+            ]
+        },
+        {
+            'title': 'AKURASI',
+            'items': [
+                {
+                    'q': 'Seberapa jauh keakuratannya?',
+                    'a': "Tingkat akurasi model bergantung pada kualitas dan keragaman data yang digunakan saat pelatihan, serta kualitas citra yang diunggah pengguna (pencahayaan, fokus, sudut pengambilan). Seperti sistem skrining berbasis AI pada umumnya, EyeDetect <strong>tidak memiliki akurasi 100%</strong> dan dapat menghasilkan false positive (salah mendeteksi ada kelainan) maupun false negative (gagal mendeteksi kelainan yang sebenarnya ada). Oleh karena itu, hasil skrining tidak menggantikan pemeriksaan klinis oleh dokter mata."
+                }
+            ]
+        },
+        {
+            'title': 'TEKNIS',
+            'items': [
+                {
+                    'q': 'Apa yang terjadi jika saya hanya menebak dengan benar?',
+                    'a': 'EyeDetect bukan merupakan tes berbasis tebakan pengguna — sistem ini bekerja dengan menganalisis citra mata Anda secara otomatis menggunakan model AI, bukan berdasarkan jawaban atau tebakan yang Anda masukkan. Jadi, hasil skrining murni berasal dari analisis citra, bukan dari sesi tanya-jawab yang bisa "ditebak".'
+                }
+            ]
+        },
+        {
+            'title': 'MENGAPA HARUS PERIKSA',
+            'items': [
+                {
+                    'q': 'Mengapa saya harus memeriksakan penglihatan saya?',
+                    'a': 'Banyak gangguan mata seperti glaukoma, retinopati diabetik, dan katarak tidak menunjukkan gejala yang jelas pada tahap awal. Pemeriksaan rutin membantu mendeteksi kelainan sejak dini sebelum menyebabkan kerusakan permanen atau kehilangan penglihatan, sehingga penanganan dapat dilakukan lebih cepat dan efektif.'
+                }
+            ]
+        },
+        {
+            'title': 'RISIKO',
+            'items': [
+                {
+                    'q': 'Siapa yang berisiko mengalami gangguan penglihatan?',
+                    'a': 'Beberapa kelompok yang memiliki risiko lebih tinggi antara lain:<ul><li>Penderita diabetes (berisiko retinopati diabetik)</li><li>Orang dengan riwayat keluarga penyakit mata (misalnya glaukoma)</li><li>Lansia (risiko katarak dan degenerasi makula meningkat seiring usia)</li><li>Orang dengan tekanan darah tinggi atau kondisi kardiovaskular tertentu</li><li>Orang yang sering terpapar sinar UV tanpa pelindung mata</li><li>Perokok aktif</li></ul>'
+                }
+            ]
+        },
+        {
+            'title': 'TEMPAT TES',
+            'items': [
+                {
+                    'q': 'Saya tidak tahu di mana saya bisa menjalani tes penglihatan. Apa yang harus saya lakukan?',
+                    'a': 'Anda bisa memeriksakan penglihatan di:<ul><li>Klinik mata atau rumah sakit terdekat dengan layanan spesialis mata (dokter spesialis mata/SpM)</li><li>Optik yang menyediakan layanan pemeriksaan refraksi dasar</li><li>Puskesmas yang memiliki layanan kesehatan mata</li></ul>'
+                }
+            ]
+        }
+    ]
+
+    return render(request, 'faq.html', {
+        'faq_sections': faq_sections,
     })
 
 
