@@ -48,34 +48,41 @@ def login_proses(request):
     if request.method != 'POST':
         return redirect('login')
 
-    email = request.POST.get('email', '').strip().lower()
-    password = request.POST.get('password', '')
-
-    # Check if the user requested admin login
-    login_as_admin = bool(request.POST.get('login_as_admin'))
+    try:
+        email = (request.POST.get('email') or '').strip().lower()
+        password = request.POST.get('password') or ''
+        login_as_admin = bool(request.POST.get('login_as_admin'))
+    except Exception:
+        email = ''
+        password = ''
+        login_as_admin = False
 
     if not email or not password:
         messages.error(request, 'Email dan password harus diisi.')
         return render(request, 'admin_login.html' if login_as_admin else 'login.html')
 
     user = None
-    user_obj = User.objects.filter(email__iexact=email).first()
-
-    if user_obj is not None:
-        user = authenticate(request, username=user_obj.username, password=password)
-    else:
-        user = authenticate(request, username=email, password=password)
+    try:
+        user_obj = User.objects.filter(email__iexact=email).first()
+        if user_obj is not None:
+            user = authenticate(request, username=user_obj.username, password=password)
+        else:
+            user = authenticate(request, username=email, password=password)
+    except Exception:
+        user = None
 
     if user is not None:
-        if login_as_admin and not (user.is_staff or user.is_superuser):
-            messages.error(request, 'Akun ini bukan akun admin.')
-            return render(request, 'admin_login.html')
+        try:
+            if login_as_admin and not (user.is_staff or user.is_superuser):
+                messages.error(request, 'Akun ini bukan akun admin.')
+                return render(request, 'admin_login.html')
 
-        login(request, user)
-
-        if user.is_staff or user.is_superuser:
-            return redirect('admin_panel')
-        return redirect('dashboard')
+            login(request, user)
+            if user.is_staff or user.is_superuser:
+                return redirect('admin_panel')
+            return redirect('dashboard')
+        except Exception:
+            return redirect('dashboard')
 
     messages.error(request, 'Email atau password tidak valid.')
     return render(request, 'admin_login.html' if login_as_admin else 'login.html')
