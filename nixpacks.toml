@@ -1,4 +1,8 @@
 # Nixpacks Configuration for Railway
+
+[variables]
+MISE_PYTHON_GITHUB_ATTESTATIONS = "false"
+
 [phases.setup]
 nixPkgs = ["python312", "postgresql"]
 
