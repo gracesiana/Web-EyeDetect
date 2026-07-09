@@ -11,7 +11,7 @@ class Command(BaseCommand):
         admin_user, created = User.objects.get_or_create(
             username='admin',
             defaults={
-                'email': 'admin@retinadetect.local',
+                'email': 'admin@eyedetect.com',
                 'is_staff': True,
                 'is_superuser': True,
             },
@@ -20,7 +20,7 @@ class Command(BaseCommand):
             admin_user.set_password('admin123')
             admin_user.save()
         else:
-            admin_user.email = 'admin@retinadetect.local'
+            admin_user.email = 'admin@eyedetect.com'
             admin_user.is_staff = True
             admin_user.is_superuser = True
             admin_user.set_password('admin123')
