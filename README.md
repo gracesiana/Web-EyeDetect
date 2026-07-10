@@ -60,10 +60,20 @@ Platform deteksi penyakit mata berbasis AI menggunakan Deep Learning (CNN dengan
 
 ## 📦 Installation & Setup
 
-### Prerequisites
-- Python 3.10+ atau 3.11 atau 3.12
-- pip (included with Python)
-- Git (optional)
+### Prerequisites (Yang Harus Ada di Sistem)
+- **Python 3.10, 3.11, atau 3.12** - [Download](https://www.python.org/downloads/)
+- **pip** (included with Python)
+- **Git** (optional) - [Download](https://git-scm.com/downloads)
+
+### Dependencies yang Akan Diinstall Otomatis
+Script `setup.ps1` akan menginstall:
+- Django 6.0.7 (~10 MB)
+- **TensorFlow 2.18.0** (~350 MB) ⚠️ File besar!
+- OpenCV Python (~50 MB)
+- Pillow, NumPy, WhiteNoise
+- PostgreSQL adapter, Gunicorn, Cloudinary
+
+💡 **Total download:** ~450-500 MB | **Waktu:** 5-10 menit
 
 ---
 
@@ -83,8 +93,10 @@ cd Web-EyeDetect
 ```
 
 **Atau double-click:**
-1. `setup.ps1` (setup pertama kali)
+1. `setup.ps1` (setup pertama kali - install semua dependencies)
 2. `run.ps1` (untuk run server)
+
+📖 **Panduan lengkap:** Lihat [INSTALLATION_GUIDE.md](./INSTALLATION_GUIDE.md)
 
 ---
 
@@ -162,8 +174,10 @@ Setelah server running, buka browser ke:
 
 ### 📖 Dokumentasi Lengkap
 
-- **Quick Start**: [QUICKSTART.md](./QUICKSTART.md)
-- **Cara Run Project**: [CARA_RUN_PROJECT.md](./CARA_RUN_PROJECT.md)
+- **Quick Start untuk Kontributor**: [QUICK_START.md](./QUICK_START.md) ⚡ Baca ini dulu!
+- **Installation Guide (Detail)**: [INSTALLATION_GUIDE.md](./INSTALLATION_GUIDE.md)
+- **Dependencies List**: [DEPENDENCIES.md](./DEPENDENCIES.md)
+- **Cara Menjalankan**: [CARA_MENJALANKAN.md](./CARA_MENJALANKAN.md)
 - **Deployment Guide**: [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)
 
 ---
