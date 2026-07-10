@@ -58,71 +58,113 @@ Platform deteksi penyakit mata berbasis AI menggunakan Deep Learning (CNN dengan
 
 ---
 
-## 📦 Installation
+## 📦 Installation & Setup
 
 ### Prerequisites
-- Python 3.12+
-- pip
-- Git
+- Python 3.10+ atau 3.11 atau 3.12
+- pip (included with Python)
+- Git (optional)
 
-### Local Development
+---
 
-1. **Clone Repository**
-```bash
+### 🚀 Quick Setup (Otomatis)
+
+**Windows PowerShell:**
+```powershell
+# 1. Clone atau download project
 git clone https://github.com/gracesiana/Web-EyeDetect.git
-cd Web-EyeDetect/backend
+cd Web-EyeDetect
+
+# 2. Jalankan setup script (otomatis install semua)
+.\setup.ps1
+
+# 3. Start server
+.\run.ps1
 ```
 
-2. **Create Virtual Environment**
-```bash
-python -m venv venv
+**Atau double-click:**
+1. `setup.ps1` (setup pertama kali)
+2. `run.ps1` (untuk run server)
 
-# Windows
-venv\Scripts\activate
+---
 
-# Linux/Mac
-source venv/bin/activate
+### 🛠️ Manual Setup (Step by Step)
+
+**1. Clone Repository**
+```powershell
+git clone https://github.com/gracesiana/Web-EyeDetect.git
+cd Web-EyeDetect\backend
 ```
 
-3. **Install Dependencies**
-```bash
-pip install -r requirements.txt
+**2. Create Virtual Environment**
+```powershell
+python -m venv .venv
+# atau: py -m venv .venv
 ```
 
-4. **Setup Environment Variables**
-```bash
-# Copy example env file
-cp .env.example .env
+**3. Activate Virtual Environment**
+```powershell
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
 
-# Edit .env and set:
-# DJANGO_SECRET_KEY=your-secret-key-here
-# DJANGO_DEBUG=True
-# DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+# Windows CMD:
+.venv\Scripts\activate.bat
+
+# Git Bash:
+source .venv/Scripts/activate
 ```
 
-5. **Run Migrations**
-```bash
+**4. Install Dependencies**
+```powershell
+pip install --upgrade pip
+pip install -r ..\requirements.txt
+```
+
+**Atau install manual:**
+```powershell
+pip install Django==6.0.7
+pip install tensorflow
+pip install opencv-python-headless
+pip install Pillow
+pip install numpy
+pip install cloudinary
+pip install django-cloudinary-storage
+pip install whitenoise
+```
+
+**5. Setup Database**
+```powershell
 python manage.py migrate
 ```
 
-6. **Create Admin User**
-```bash
+**6. Create Default Admin**
+```powershell
 python manage.py ensure_default_admin
-# Default credentials:
-# Username: admin
-# Password: admin123
 ```
 
-7. **Run Development Server**
-```bash
+**7. Run Server**
+```powershell
 python manage.py runserver
 ```
 
-8. **Access Application**
-- Landing Page: http://localhost:8000/
-- User Login: http://localhost:8000/login/
-- Admin Login: http://localhost:8000/login/admin/
-- Django Admin: http://localhost:8000/admin/
+---
+
+### 🌐 Access Application
+
+Setelah server running, buka browser ke:
+
+- **Landing Page**: http://localhost:8000/
+- **User Login**: http://localhost:8000/login/
+- **Admin Login**: http://localhost:8000/login/admin/
+- **Django Admin**: http://localhost:8000/admin/
+
+---
+
+### 📖 Dokumentasi Lengkap
+
+- **Quick Start**: [QUICKSTART.md](./QUICKSTART.md)
+- **Cara Run Project**: [CARA_RUN_PROJECT.md](./CARA_RUN_PROJECT.md)
+- **Deployment Guide**: [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)
 
 ---
 
