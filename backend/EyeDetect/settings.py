@@ -62,7 +62,7 @@ def _build_csrf_origins(domains):
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-@obpp_2$077pijp(lms*4==qs)99g*wfn^)j%m#-&4gtgzv(#_')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = _get_env_bool('DJANGO_DEBUG', False)
+DEBUG = _get_env_bool('DJANGO_DEBUG', True)
 
 railway_domains = _get_railway_domains()
 allowed_hosts = _get_env_list('DJANGO_ALLOWED_HOSTS', ['127.0.0.1', 'localhost', '0.0.0.0', '.railway.app', '.vercel.app'])
@@ -90,12 +90,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    
-    'cloudinary_storage',
-    'cloudinary',
 
     'appdeteksi',
 ]
+
+# Cloudinary hanya aktif kalau env var tersedia
+if os.environ.get('CLOUDINARY_CLOUD_NAME'):
+    INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
